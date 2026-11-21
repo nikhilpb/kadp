@@ -1,6 +1,6 @@
 # Checking the Kernel ADP proofs
 
-The replacement for Proposition 1 is proved in Lean. For every realized sample, the primal is unbounded and the dual infeasible when $\kappa<1/(1-\alpha)$. At or above the threshold, both optima are attained and the corrected dual value equals the primal maximum. Every minimizing multiplier of the printed QP recovers the unique optimal primal weight. The four-page note states the original claim, gives two counterexamples, and proves the replacement. [Proof note](proofs/proposition-1.pdf) · [LaTeX source](proofs/proposition-1.tex) · [Main Lean theorem](Kadp/PrimalAttainment.lean)
+The replacement for Proposition 1 is proved in Lean. For every realized sample, the primal is unbounded and the dual infeasible when $\kappa<1/(1-\alpha)$. At or above the threshold, both optima are attained and the corrected dual value equals the primal maximum. Every minimizing multiplier of the printed QP recovers the unique optimal primal weight. The standalone note defines the model and both programs, proves the threshold and recovery formula, and works through an example at equality. The final section states the original claim and illustrates the two corrections. [Proof note](proofs/proposition-1.pdf) · [LaTeX source](proofs/proposition-1.tex) · [Main Lean theorem](Kadp/PrimalAttainment.lean)
 
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 
