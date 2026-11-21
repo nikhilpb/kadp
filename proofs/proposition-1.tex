@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=26mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,urlcolor=link,hypertexnames=false]{hyperref}
+\definecolor{link}{HTML}{205973}
+\hypersetup{pdftitle={Two counterexamples to Proposition 1 of Kernel ADP}}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\newcommand{\declaration}[1]{\texttt{\detokenize{#1}}}
+
+\begin{document}
+
+{\LARGE\bfseries Two counterexamples to Proposition 1\par}
+{\large The sampled kernel ADP programs (6) and (9)\par}
+\medskip
+
+Proposition 1 of Bhat, Farias, Moallemi, and Zheng claims that the sampled
+primal and its printed dual attain equal, finite optimal values. The first
+example below refutes finiteness under the stated hypothesis $\kappa>0$.
+The second gives different attained values even when both programs are feasible.
+
+\section*{Reduction to one state}
+Take one state $x$, one action, and one sample. The transition returns to $x$
+with probability one. Set $\nu(x)=\pi(x)=1$, so the weight is $w_x=1$.
+Take the real feature space with $\Phi(x)=0$, discount $\alpha=1/2$, and
+regularization $\Gamma=2$. Write $g$ for the cost and $\kappa>0$ for the
+slack penalty. The approximate value at $x$ is the intercept $b$, and the
+quadratic penalty is $z^2$. Hence (6) reduces to
+\begin{equation}
+  \max_{z,b,s\in\mathbb R}\ b-\kappa s-z^2
+  \qquad \text{subject to}\quad s\ge0,\quad b\le g+\tfrac12 b+s .
+  \tag{P}
+\end{equation}
+Every feature inner product vanishes. Thus (7) gives $Q=0$, (8) gives
+$R=\Gamma g=2g$, and the printed constant $S$ is zero. The single dual row
+has cap $\kappa$, and its total mass must equal $1/(1-\alpha)=2$. As printed,
+(9) is therefore
+\begin{equation}
+  \min_{\lambda\in\mathbb R}\ 2g\lambda
+  \qquad \text{subject to}\quad 0\le\lambda\le\kappa,\quad \lambda=2 .
+  \tag{D}
+\end{equation}
+
+\section*{1. An unbounded primal and an infeasible dual}
+Set $g=0$ and $\kappa=1$. Given any proposed upper bound $M\in\mathbb R$,
+let $t=\max\{M,0\}+1$. The point $(z,b,s)=(0,2t,t)$ is feasible in (P)
+since $t\ge0$ and $2t=\tfrac12(2t)+t$. Its objective is $2t-t=t>M$.
+Thus the primal objective is unbounded above. In (D), $\lambda=2$ violates
+$\lambda\le1$, so the dual feasible set is empty.
+
+\section*{2. Attained optimal values of two and four}
+Set $g=1$ and $\kappa=4$. Every feasible point of (P) satisfies $b\le2+2s$,
+so
+\[
+  b-4s-z^2 \ \le\ 2-2s-z^2 \ \le\ 2 .
+\]
+The feasible point $(z,b,s)=(0,2,0)$ attains $2$. The only feasible point
+of (D) is $\lambda=2$. It satisfies the cap $4$ and attains the objective
+$2g\lambda=4$. Thus the primal maximum is $2$ and the printed dual minimum is $4$.
+
+\medskip
+{\small
+\textbf{Lean proofs.}
+In \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Examples/Proposition1.lean}
+{module \declaration{Kadp.Examples.Proposition1}}, the first pair is
+\declaration{primal_unbounded} and \declaration{dual_infeasible}.
+The second is \declaration{primal_maximum_two} and \declaration{dual_minimum_four}.
+
+\textbf{Source.} N.~Bhat, V.~F.~Farias, C.~C.~Moallemi, and A.~T.~Zheng,
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=7}
+{\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
+August 29, 2022, pp.~7--8.
+}
+\end{document}
