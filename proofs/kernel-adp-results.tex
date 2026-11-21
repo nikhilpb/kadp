@@ -4,7 +4,11 @@
 \usepackage{xcolor}
 \definecolor{link}{HTML}{205973}
 \usepackage[colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
-\hypersetup{pdftitle={Strong duality for sampled value-function approximation}}
+\hypersetup{
+  pdftitle={Kernel Approximate Dynamic Programming: Formalized Results and Corrections},
+  pdfsubject={Mathematical results from Non-parametric Approximate Dynamic Programming via the Kernel Method, with proofs checked in Lean}
+}
+\numberwithin{equation}{section}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
 \raggedbottom
@@ -15,14 +19,16 @@
 
 \begin{document}
 
-{\LARGE\bfseries Strong duality for sampled\\[2pt] value-function approximation\par}
-\medskip
+{\Large\bfseries Kernel Approximate Dynamic Programming\par}
+{\large Formalized Results and Corrections\par}
+
+\section{Strong duality and primal recovery}
 The sampled value-function approximation problem and its finite-dimensional
 dual attain the same optimal value whenever the dual is feasible. From any
 dual minimizer, we recover the unique optimal weight and construct an
 intercept and slacks that attain this value in the primal problem.
 
-\section*{The model and the two optimization problems}
+\subsection*{The sampled model}
 Let \(\mathcal S\) and \(\mathcal A\) be finite, nonempty state and action sets.
 Action \(a\) at state \(x\) costs \(g_{x,a}\in\R\) and moves to \(y\) with probability
 \(p(x,y,a)\). The probabilities are nonnegative and sum to one over \(y\).
@@ -79,18 +85,18 @@ The dual minimizes
 Denote the set of feasible multipliers by \(\Lambda\).
 
 \newpage
-\section*{Strong duality and weight recovery}
+\subsection*{Strong duality and weight recovery}
 \textbf{Proposition.} Fix any realization of the sample and assume
 \(\kappa\ge 1/(1-\alpha)\). Then (P) and (D) attain the same finite optimal
 value. For every minimizer \(\lambda^*\) of \(G\) on \(\Lambda\), the weight
 of every primal maximizer is
-\[
+\begin{equation}
  \mathbf z^*=\frac{1}{\Gamma}\left[
      \frac1N\sum_{x\in\widehat{\mathcal S}} w_x\mathbf x
      -\sum_{x,a}\lambda^*_{x,a}
         \bigl(\mathbf x-\alpha\mathbb E_{x,a}[\mathbf X']\bigr)\right].
-             \tag{1}\label{eq:weight}
-\]
+ \label{eq:weight}
+\end{equation}
 In particular the optimal weight is unique. The worked example illustrates
 how the intercept and slacks can vary at the threshold.
 
@@ -128,7 +134,7 @@ gives the exact gap
   =\frac{\Gamma}{2}\norm{\mathbf z-\mathbf z_\lambda}^2
       +\sum_{x,a}\lambda_{x,a}\rho_{x,a}
       +\sum_x\bigl(\tfrac{\kappa}{N}-\sum_a\lambda_{x,a}\bigr)s_x .
-  \tag{2}\label{eq:gap}
+  \label{eq:gap}
 \end{equation}
 For feasible \((\mathbf z,b,s)\), every term on the right of \eqref{eq:gap} is
 nonnegative. Hence every dual value bounds every primal value from above.
@@ -136,7 +142,7 @@ Equality forces \(\mathbf z=\mathbf z_\lambda\). To finish the proof, we constru
 intercept and slacks that make the gap zero at a dual minimizer.
 
 \newpage
-\section*{Constructing a primal optimizer}
+\subsection*{Constructing a primal optimizer}
 Fix any minimizer \(\lambda^*\) of \(G\) and set
 \(\mathbf z=\mathbf z_{\lambda^*}\). For this fixed weight define the adjusted costs
 \(c_{x,a}=g_{x,a}-\ip{d_{x,a}}{\mathbf z}\). The primal constraints now read
@@ -193,7 +199,7 @@ This primal point therefore attains the dual minimum. Applying
 \hfill\(\square\)
 
 \newpage
-\section*{A worked example at the threshold}
+\subsection*{A worked example at the threshold}
 Take two states \(x,y\), one action, and one draw at \(x\). The action at
 \(x\) costs \(1\) and moves to \(y\). At \(y\) it costs \(0\) and stays
 there. Use scalar features \(\Phi(x)=1,\ \Phi(y)=0\), uniform
@@ -211,7 +217,7 @@ The adjusted cost is \(1-(-1/2)=3/2\), so the construction gives
 Increasing \(b\) by any \(t\ge0\) and \(s_x\) by \(t/2\) preserves both
 feasibility and value. Only the primal weight is forced in this example.
 
-\section*{Differences from the original proposition}
+\subsection*{Differences from the original proposition}
 Proposition~1 of Bhat, Farias, Moallemi and Zheng asserts, for positive
 penalties, that the primal and their quadratic program attain the same
 finite value and that an optimal multiplier recovers an optimal primal

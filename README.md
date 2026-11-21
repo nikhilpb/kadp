@@ -1,6 +1,8 @@
 # Checking the Kernel ADP proofs
 
-The main proposition assumes $\kappa\ge 1/(1-\alpha)$. For every realized sample, the primal and normalized dual attain the same finite value. Every minimizing multiplier recovers the unique optimal primal weight. The standalone note proves the result and works through an example at equality. Its closing comparison explains the penalty hypothesis and how to convert the objective value of the printed quadratic program. [Proof note](proofs/proposition-1.pdf) · [LaTeX source](proofs/proposition-1.tex) · [Main Lean theorem](Kadp/PrimalAttainment.lean)
+*Kernel Approximate Dynamic Programming: Formalized Results and Corrections* collects the mathematical results from the paper as their proofs are checked in Lean. [Collected results (PDF)](proofs/kernel-adp-results.pdf) · [LaTeX source](proofs/kernel-adp-results.tex)
+
+The first section proves strong duality for the sampled value-function approximation problem and recovers a primal optimizer from any dual minimizer. It includes a worked example and explains the corrections to the paper's Proposition 1. [Lean theorem](Kadp/PrimalAttainment.lean)
 
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 
@@ -26,4 +28,4 @@ printf '%s\n' 'import Kadp' '#print axioms Kadp.SampledRSALP.strongDuality' | la
 
 The [claim index](audit/claims.md) maps the two counterexamples, the corrected proposition, and the open claims to their evidence. The [plan](PLAN.md) covers the remaining work.
 
-To rebuild the PDF from the repository root, run `tectonic proofs/proposition-1.tex`.
+To rebuild the PDF from the repository root, run `tectonic proofs/kernel-adp-results.tex`.
