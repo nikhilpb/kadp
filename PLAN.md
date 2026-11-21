@@ -36,7 +36,7 @@ Paths below are proposed implementation files under `kadp/`. Each milestone has 
 
 **Step 1 completed on November 21, 2026.** Lean 4.32.0 checked all four conclusions for the two instances. The [claim index](audit/claims.md) records the evidence and the [setup guide](README.md) gives the commands to reproduce it. Step 2 is open.
 
-**Replacement for Proposition 1 completed on November 22, 2026.** The theorem `correctedProposition1` covers every realized sample and both sides of the sharp threshold. The allocation proof handles cost ties and fully saturated rows. [Lean theorem](Kadp/PrimalAttainment.lean) · [Written proof](proofs/proposition-1.pdf)
+**Replacement for Proposition 1 completed on November 22, 2026.** The theorem `strongDuality` assumes the sharp lower bound on the penalty and applies to every realized sample. The companion theorem `correctedProposition1` also covers penalties below the threshold. The allocation proof handles cost ties and fully saturated rows. [Lean theorem](Kadp/PrimalAttainment.lean) · [Written proof](proofs/proposition-1.pdf)
 
 **Next proof target.** Audit (11)–(14) against the certified weight formula (10). Substitute the recovered weight into the greedy action score and expand the feature inner products into kernels. Compare each coefficient with (7)–(8), tracking which draw carries the importance weight, and prove that the intercept cancels when comparing actions. For each printed formula, record a Lean equality or a counterexample and a corrected equality. Then return to the approximation theorem for (18), starting with the upstream compatibility checks in step 2.
 

@@ -17,11 +17,10 @@
 
 {\LARGE\bfseries Strong duality for sampled\\[2pt] value-function approximation\par}
 \medskip
-A larger intercept raises every fitted value. By increasing the slacks, we
-can keep the fit feasible as the intercept grows. For a discount factor
-\(\alpha\), the slack penalty must reach \(1/(1-\alpha)\) for the problem to
-have a finite maximum. At that threshold and above it, a dual solution
-determines an optimal fit.
+When the slack penalty is at least \(1/(1-\alpha)\), where \(\alpha\) is the
+discount factor, the sampled problem has a finite maximum. We show how to
+recover an optimal weight, intercept and slacks from any solution of a
+finite-dimensional dual problem.
 
 \section*{The model and the two optimization problems}
 Let \(\mathcal X\) and \(\mathcal A\) be finite, nonempty sets of states and actions.
@@ -77,34 +76,26 @@ feature differences. The required total mass is \(M=1/h\). Solve
 Denote the set of feasible multipliers by \(\Lambda\).
 
 \newpage
-\section*{The sharp threshold and optimal weight}
-\textbf{Theorem.} Fix any sample and data as above.
-\begin{itemize}
-\item If \(\kappa<1/(1-\alpha)\), the primal objective is unbounded above
-and the dual feasible set is empty.
-\item If \(\kappa\ge1/(1-\alpha)\), the primal maximum and the dual minimum
-are finite, attained and equal. For every dual minimizer \(\lambda^*\), the
-weight of every primal maximizer is
+\section*{Strong duality and weight recovery}
+\textbf{Proposition.} Fix any realization of the sample and assume
+\(\kappa\ge 1/(1-\alpha)\). Then (P) and (D) attain the same finite optimal
+value. For every minimizer \(\lambda^*\) of \(G\) on \(\Lambda\), the weight
+of every primal maximizer is
 \[
              z^*=\frac{m-v(\lambda^*)}{\Gamma}.
              \tag{1}\label{eq:weight}
 \]
-\end{itemize}
-In particular the optimal weight is unique. The intercept and slacks can have
-several optimal choices, as the worked example below illustrates.
+In particular the optimal weight is unique. The worked example illustrates
+how the intercept and slacks can vary at the threshold.
 
-\lead{Proof of the threshold.}
-Each of the \(N\) rows can hold at most \(q\) units of mass. Together they can
-hold \(Nq=\kappa\), so a dual feasible point requires \(\kappa\ge M\).
-Conversely, when \(\kappa\ge M\), placing \(M/N\) on one action in each row
-and zero elsewhere gives a feasible point. The set \(\Lambda\) is then closed and
-bounded in a finite-dimensional space, hence compact. The continuous function
-\(G\) attains its minimum on \(\Lambda\).
-
-For the primal, set \(K=\max_{i,a}|g_{ia}|\). For each \(t\ge0\) take
-\(z=0,\ b=t,\ s_i=ht+K\). Every constraint holds since \(g_{ia}+K\ge0\).
-The objective becomes \((1-\kappa h)t-\kappa K\). When \(\kappa<M\)
-its slope is positive, so these feasible values grow without bound.
+\lead{Existence of a dual minimizer.}
+The hypothesis gives \(M/N\le\kappa/N=q\). Place mass \(M/N\) on one
+action in each row and zero on the other actions. This assignment respects
+every row cap and has total mass \(M\), even when \(M=\kappa\).
+Thus \(\Lambda\) is nonempty. Its linear constraints define a closed set,
+and each multiplier lies between \(0\) and \(q\). Hence \(\Lambda\) is
+compact in a finite-dimensional space. The continuous function \(G\)
+attains a minimum there.
 
 \lead{Why the dual bounds the primal.}
 For a primal point \((z,b,s)\), let
@@ -140,7 +131,7 @@ intercept and slacks that make the gap zero at a dual minimizer.
 
 \newpage
 \section*{Constructing a primal optimizer}
-Assume \(\kappa\ge M\). Fix any minimizer \(\lambda^*\) of \(G\) and set
+Fix any minimizer \(\lambda^*\) of \(G\) and set
 \(z=z_{\lambda^*}\). For this fixed weight define the adjusted costs
 \(c_{ia}=g_{ia}-\ip{d_{ia}}{z}\). The primal constraints now read
 \(hb\le c_{ia}+s_i\). We will obtain \(hb\) from the cheapest action in each row.
@@ -220,7 +211,8 @@ finite value and that an optimal multiplier recovers an optimal primal
 weight. Two changes give the theorem proved here.
 
 \lead{1. The penalty threshold.}
-Positive \(\kappa\) alone allows an unbounded primal. For example, take one
+The total row capacity is \(\kappa\), while the required mass is \(1/(1-\alpha)\).
+This gives the lower bound in the proposition. To see what can fail, take one
 state, one action that returns to that state, and one draw. Set
 \(\nu=\pi=1,\ H=\R,\ \Phi=0,\ \alpha=1/2,\ \Gamma=2\).
 With cost \(g=0\) and \(\kappa=1\), the feasible points
@@ -251,6 +243,6 @@ same conversion takes \(F(2)=3\) to \(G(2)=9/4\).
 \textbf{Source.} N.~Bhat, V.~F.~Farias, C.~C.~Moallemi and A.~T.~Zheng,
 \href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=8}{\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
 August 29, 2022, Proposition~1.\par
-\textbf{Formal proof.} \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/PrimalAttainment.lean}{Lean theorem \texttt{correctedProposition1}}.
+\textbf{Formal proof.} \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/PrimalAttainment.lean}{Lean theorem \texttt{strongDuality}}.
 }
 \end{document}

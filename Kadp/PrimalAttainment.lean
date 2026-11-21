@@ -144,9 +144,23 @@ theorem primal_attains_of_printed_dual_minimizer [Nonempty A] {l : Fin N → A �
       D.primalObjective (D.recoveredWeight l) b s = D.correctedDualObjective l :=
   D.primal_attains_of_dual_minimizer hl fun k hk => (D.dualObjective_le_iff l k).mp (hmin k hk)
 
-/-- Corrected Proposition 1, on the data of (6). At and above the threshold
-    the greatest primal and least normalized dual values coincide, and every
-    optimal primal/dual pair satisfies the weight formula (10). -/
+/-- Strong duality under the sharp penalty hypothesis, including equality.
+    Every optimal primal/dual pair satisfies the weight formula (10). -/
+theorem strongDuality [Nonempty A] (hκ : 1 / (1 - D.α) ≤ D.κ) :
+    ∃ v : ℝ, IsGreatest D.primalValues v ∧ IsLeast D.correctedDualValues v ∧
+      ∀ z b s l, D.PrimalFeasible z b s → D.primalObjective z b s = v →
+        D.DualFeasible l → D.correctedDualObjective l = v → z = D.recoveredWeight l := by
+  obtain ⟨l, hl, hmin⟩ := D.exists_dual_minimizer hκ
+  obtain ⟨b, s, hp, heq⟩ := D.primal_attains_of_dual_minimizer hl hmin
+  refine ⟨D.correctedDualObjective l, ⟨⟨_, b, s, hp, heq⟩, ?_⟩, ⟨⟨l, hl, rfl⟩, ?_⟩, ?_⟩
+  · rintro _ ⟨z', b', s', hp', rfl⟩
+    exact D.weakDuality hp' hl
+  · rintro _ ⟨k, hk, rfl⟩
+    exact hmin k hk
+  · intro z' b' s' k hp' hv hk hkv
+    exact D.recoveredWeight_of_equal_values hp' hk (hkv.trans hv.symm)
+
+/-- The full classification, combining strong duality with the behavior below the threshold. -/
 theorem correctedProposition1 [Nonempty A] :
     (D.κ < 1 / (1 - D.α) → ¬ BddAbove D.primalValues ∧ ¬ ∃ l, D.DualFeasible l) ∧
     (1 / (1 - D.α) ≤ D.κ → ∃ v : ℝ,
@@ -156,15 +170,6 @@ theorem correctedProposition1 [Nonempty A] :
   constructor
   · intro hκ
     exact ⟨D.primal_unbounded_of_penalty_lt hκ, fun h => hκ.not_ge (D.dualFeasible_iff_penalty.mp h)⟩
-  · intro hκ
-    obtain ⟨l, hl, hmin⟩ := D.exists_dual_minimizer hκ
-    obtain ⟨b, s, hp, heq⟩ := D.primal_attains_of_dual_minimizer hl hmin
-    refine ⟨D.correctedDualObjective l, ⟨⟨_, b, s, hp, heq⟩, ?_⟩, ⟨⟨l, hl, rfl⟩, ?_⟩, ?_⟩
-    · rintro _ ⟨z', b', s', hp', rfl⟩
-      exact D.weakDuality hp' hl
-    · rintro _ ⟨k, hk, rfl⟩
-      exact hmin k hk
-    · intro z' b' s' k hp' hv hk hkv
-      exact D.recoveredWeight_of_equal_values hp' hk (hkv.trans hv.symm)
+  · exact D.strongDuality
 
 end Kadp.SampledRSALP

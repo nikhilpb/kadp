@@ -1,6 +1,6 @@
 # Checking the Kernel ADP proofs
 
-The replacement for Proposition 1 is proved in Lean. For every realized sample, the primal is unbounded and the dual infeasible when $\kappa<1/(1-\alpha)$. At or above the threshold, both optima are attained and the corrected dual value equals the primal maximum. Every minimizing multiplier of the printed QP recovers the unique optimal primal weight. The standalone note defines the model and both programs, proves the threshold and recovery formula, and works through an example at equality. The final section states the original claim and illustrates the two corrections. [Proof note](proofs/proposition-1.pdf) · [LaTeX source](proofs/proposition-1.tex) · [Main Lean theorem](Kadp/PrimalAttainment.lean)
+The main proposition assumes $\kappa\ge 1/(1-\alpha)$. For every realized sample, the primal and normalized dual attain the same finite value. Every minimizing multiplier recovers the unique optimal primal weight. The standalone note proves the result and works through an example at equality. Its closing comparison explains the penalty hypothesis and how to convert the objective value of the printed quadratic program. [Proof note](proofs/proposition-1.pdf) · [LaTeX source](proofs/proposition-1.tex) · [Main Lean theorem](Kadp/PrimalAttainment.lean)
 
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 
@@ -21,7 +21,7 @@ After editing a proof, run `lake build` again. To replay all project declaration
 To inspect the assumptions behind the replacement theorem, run the command below. Lean reports `propext`, `Classical.choice`, and `Quot.sound`.
 
 ```sh
-printf '%s\n' 'import Kadp' '#print axioms Kadp.SampledRSALP.correctedProposition1' | lake env lean --stdin
+printf '%s\n' 'import Kadp' '#print axioms Kadp.SampledRSALP.strongDuality' | lake env lean --stdin
 ```
 
 The [claim index](audit/claims.md) maps the two counterexamples, the corrected proposition, and the open claims to their evidence. The [plan](PLAN.md) covers the remaining work.
