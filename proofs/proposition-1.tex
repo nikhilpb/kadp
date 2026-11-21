@@ -5,7 +5,7 @@
 \usepackage[colorlinks=true,urlcolor=link,hypertexnames=false]{hyperref}
 \definecolor{link}{HTML}{205973}
 \hypersetup{pdftitle={Two counterexamples to Proposition 1 of Kernel ADP}}
-\pagestyle{empty}
+\pagestyle{plain}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
 
@@ -14,28 +14,93 @@
 \begin{document}
 
 {\LARGE\bfseries Two counterexamples to Proposition 1\par}
-{\large The sampled kernel ADP programs (6) and (9)\par}
+{\large The sampled primal and dual in kernel approximate dynamic programming\par}
 \medskip
 
-Proposition 1 of Bhat, Farias, Moallemi, and Zheng claims that the sampled
-primal and its printed dual attain equal, finite optimal values. The first
-example below refutes finiteness under the stated hypothesis $\kappa>0$.
-The second gives different attained values even when both programs are feasible.
+Proposition~1 of Bhat, Farias, Moallemi, and Zheng asserts that two optimization
+problems attain the same finite value and gives a formula for recovering a
+primal weight vector from a dual optimizer. Two one-state instances suffice
+to test finiteness, attainment, and equality of values.
 
-\section*{Reduction to one state}
+\section*{The two programs}
+Let $\mathcal X$ and $\mathcal A$ be finite nonempty state and action sets.
+Taking action $a$ in state $x$ incurs cost $g(x,a)\in\mathbb R$ and leads to
+state $y$ with probability $p(y\mid x,a)$. Let $0<\alpha<1$ be the discount
+factor. A feature map $\Phi$ takes states into a real Hilbert space $H$.
+The approximation to the cost-to-go at $x$ is
+$J_{z,b}(x)=\langle\Phi(x),z\rangle+b$, with weight $z\in H$ and intercept
+$b\in\mathbb R$.
+
+Draw $N\ge1$ states $x_1,\ldots,x_N$ independently from a distribution
+$\pi$ with $\pi(x)>0$ for every $x$. For positive relevance weights $\nu(x)$,
+write $w_i=\nu(x_i)/\pi(x_i)$. Define the weighted mean feature $m$ and the
+discounted feature differences $d_{ia}$ by
+\[
+  m=\frac1N\sum_{i=1}^N w_i\Phi(x_i),\qquad
+  d_{ia}=\Phi(x_i)-\alpha\sum_{y\in\mathcal X}p(y\mid x_i,a)\Phi(y).
+\]
+With slack penalty $\kappa>0$ and weight penalty $\Gamma>0$, the sampled
+primal maximizes a penalized value estimate. At draw $i$, the slack $s_i$
+allows $J_{z,b}(x_i)$ to exceed the cost of taking any action followed by
+its discounted expected continuation value by up to $s_i$.
+\begin{equation}
+\begin{aligned}
+  \max_{z\in H,\, b\in\mathbb R,\, s\in\mathbb R^N}
+    &\quad \langle m,z\rangle+b-\frac{\kappa}{N}\sum_{i=1}^N s_i
+           -\frac{\Gamma}{2}\|z\|^2\\
+  \text{subject to}
+    &\quad \langle d_{ia},z\rangle+(1-\alpha)b\le g(x_i,a)+s_i
+                         &&(\text{every } i,a),\\
+    &\quad s_i\ge0 &&(\text{every } i).
+\end{aligned}\tag{6}
+\end{equation}
+The printed dual has one multiplier $\lambda_{ia}$ per draw and action.
+Index the matrix $Q$ and vector $R$ by these pairs, and write $S_0$ for
+the scalar called $S$ in the paper. Equations (7)--(8) and the definition of
+$S$ give
+\[
+ Q_{ia,jc}=\langle d_{ia},d_{jc}\rangle,\qquad
+ R_{ia}=\Gamma g(x_i,a)-\langle d_{ia},m\rangle,\qquad
+ S_0=-\Big\|\sum_{i=1}^N w_i\Phi(x_i)\Big\|^2 .
+\]
+\begin{equation}
+\begin{aligned}
+ \min_{\lambda}
+   &\quad \tfrac12\lambda^\top Q\lambda+R^\top\lambda+S_0\\
+ \text{subject to}
+   &\quad \lambda_{ia}\ge0,\qquad
+          \sum_{a\in\mathcal A}\lambda_{ia}\le\frac{\kappa}{N}
+          \quad(\text{every }i),\qquad
+          \sum_{i,a}\lambda_{ia}=\frac1{1-\alpha}.
+\end{aligned}\tag{9}
+\end{equation}
+
+\medskip
+\textbf{Proposition 1 (paper, p.~8, restated).}
+For the sampled data and positive parameters above, (6) and (9) have the same
+finite optimal value. There exist a minimizer $\lambda^*$ of (9) and a
+maximizer $(z^*,b^*,s^*)$ of (6) such that
+\begin{equation}
+ z^*=\frac{1}{\Gamma}\left(m-\sum_{i,a}\lambda^*_{ia}d_{ia}\right).
+ \tag{10}
+\end{equation}
+
+\newpage
+\section*{Two instances of the proposition}
 Take one state $x$, one action, and one sample. The transition returns to $x$
-with probability one. Set $\nu(x)=\pi(x)=1$, so the weight is $w_x=1$.
+with probability one. Set $\nu(x)=\pi(x)=1$, so the sample weight is $w_1=1$.
 Take the real feature space with $\Phi(x)=0$, discount $\alpha=1/2$, and
 regularization $\Gamma=2$. Write $g$ for the cost and $\kappa>0$ for the
 slack penalty. The approximate value at $x$ is the intercept $b$, and the
-quadratic penalty is $z^2$. Hence (6) reduces to
+quadratic penalty is $z^2$. Both $m$ and the sole feature difference vanish,
+so (6) reduces to
 \begin{equation}
   \max_{z,b,s\in\mathbb R}\ b-\kappa s-z^2
   \qquad \text{subject to}\quad s\ge0,\quad b\le g+\tfrac12 b+s .
   \tag{P}
 \end{equation}
-Every feature inner product vanishes. Thus (7) gives $Q=0$, (8) gives
-$R=\Gamma g=2g$, and the printed constant $S$ is zero. The single dual row
+Every feature inner product vanishes. The coefficients on page~1 therefore give
+$Q=0$, $R=\Gamma g=2g$, and $S_0=0$. The single dual row
 has cap $\kappa$, and its total mass must equal $1/(1-\alpha)=2$. As printed,
 (9) is therefore
 \begin{equation}
@@ -51,6 +116,12 @@ since $t\ge0$ and $2t=\tfrac12(2t)+t$. Its objective is $2t-t=t>M$.
 Thus the primal objective is unbounded above. In (D), $\lambda=2$ violates
 $\lambda\le1$, so the dual feasible set is empty.
 
+The row caps in (9) explain the obstruction. Summing the $N$ caps gives
+$\sum_{i,a}\lambda_{ia}\le\kappa$, whereas the mass constraint fixes this
+sum at $1/(1-\alpha)$. Thus dual feasibility requires
+$\kappa\ge1/(1-\alpha)$. The first instance meets the stated hypothesis
+$\kappa>0$ and violates this necessary condition.
+
 \section*{2. Attained optimal values of two and four}
 Set $g=1$ and $\kappa=4$. Every feasible point of (P) satisfies $b\le2+2s$,
 so
@@ -60,14 +131,20 @@ so
 The feasible point $(z,b,s)=(0,2,0)$ attains $2$. The only feasible point
 of (D) is $\lambda=2$. It satisfies the cap $4$ and attains the objective
 $2g\lambda=4$. Thus the primal maximum is $2$ and the printed dual minimum is $4$.
+Here (10) gives $z^*=0$, exactly the weight of the displayed primal optimizer.
+The unequal values refute the equality claim even with attainment on both sides.
 
 \medskip
 {\small
 \textbf{Lean proofs.}
-In \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Examples/Proposition1.lean}
-{module \declaration{Kadp.Examples.Proposition1}}, the first pair is
-\declaration{primal_unbounded} and \declaration{dual_infeasible}.
-The second is \declaration{primal_maximum_two} and \declaration{dual_minimum_four}.
+The \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/SampledRSALP.lean}
+{program definitions} are instantiated in the
+\href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Examples/Proposition1.lean}
+{Lean proofs of the two examples}.\par
+\begin{tabular}{@{}ll@{}}
+Example 1 & \declaration{primal_unbounded}, \declaration{dual_infeasible}\\
+Example 2 & \declaration{primal_maximum_two}, \declaration{dual_minimum_four}
+\end{tabular}
 
 \textbf{Source.} N.~Bhat, V.~F.~Farias, C.~C.~Moallemi, and A.~T.~Zheng,
 \href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=7}
