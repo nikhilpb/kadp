@@ -1,6 +1,6 @@
 # Checking the Kernel ADP proofs
 
-The [proof note](proofs/proposition-1.pdf) gives two one-state counterexamples to Proposition 1. The first produces an unbounded primal and an infeasible dual. The second gives attained optimal values of 2 and 4. [LaTeX source](proofs/proposition-1.tex) · [Lean proofs](Kadp/Examples/Proposition1.lean)
+The [proof note](proofs/proposition-1.pdf) states the printed Proposition 1, gives two counterexamples, and proves a replacement with the exact penalty threshold and corrected dual objective. The general attainment argument is on page 4. [LaTeX source](proofs/proposition-1.tex) · [Lean counterexamples](Kadp/Examples/Proposition1.lean) · [Lean duality results](Kadp/Duality.lean)
 
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 

@@ -4,7 +4,7 @@
 \usepackage{xcolor}
 \usepackage[colorlinks=true,urlcolor=link,hypertexnames=false]{hyperref}
 \definecolor{link}{HTML}{205973}
-\hypersetup{pdftitle={Two counterexamples to Proposition 1 of Kernel ADP}}
+\hypersetup{pdftitle={A correction to Proposition 1 of Kernel ADP}}
 \pagestyle{plain}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
@@ -13,14 +13,14 @@
 
 \begin{document}
 
-{\LARGE\bfseries Two counterexamples to Proposition 1\par}
+{\LARGE\bfseries A correction to Proposition 1\par}
 {\large The sampled primal and dual in kernel approximate dynamic programming\par}
 \medskip
 
 Proposition~1 of Bhat, Farias, Moallemi, and Zheng asserts that two optimization
 problems attain the same finite value and gives a formula for recovering a
-primal weight vector from a dual optimizer. Two one-state instances suffice
-to test finiteness, attainment, and equality of values.
+primal weight vector from a dual optimizer. Page~2 gives two counterexamples.
+Pages~3--4 give a replacement proposition and its proof.
 
 \section*{The two programs}
 Let $\mathcal X$ and $\mathcal A$ be finite nonempty state and action sets.
@@ -151,4 +151,116 @@ Example 2 & \declaration{primal_maximum_two}, \declaration{dual_minimum_four}
 {\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
 August 29, 2022, pp.~7--8.
 }
+
+\newpage
+\section*{A replacement for Proposition 1}
+Use the data of page~1 and fix any realized sample. Write
+$h=1-\alpha$, $M=1/h$, $q=\kappa/N$, and $g_{ia}=g(x_i,a)$.
+Let $\Lambda$ be the feasible set of (9), let
+$v(\lambda)=\sum_{i,a}\lambda_{ia}d_{ia}$, and denote the objective of (6)
+by $P(z,b,s)$. Define the corrected dual objective by
+\begin{equation}
+ G(\lambda)=\sum_{i,a} g_{ia}\lambda_{ia}
+                +\frac{1}{2\Gamma}\|m-v(\lambda)\|^2 .
+ \tag{9$'$}
+\end{equation}
+
+\textbf{Proposition 1 (replacement).}
+If $\kappa<M$, the primal is unbounded above and $\Lambda$ is empty.
+If $\kappa\ge M$, the primal maximum and the minimum of $G$ on $\Lambda$
+are finite, equal, and attained. For every minimizing $\lambda^*$,
+the weight of every primal optimizer is
+$z^*=(m-v(\lambda^*))/\Gamma$.
+In particular, the equality case $\kappa=M$ is included.
+
+\textbf{How to use the printed QP.}
+Let $F_9(\lambda)$ denote the objective in (9), including its printed
+constant $S_0$. Expanding the square in (9$'$) using the definitions of
+$Q$ and $R$ gives the exact identity
+\[
+   G(\lambda)=\frac{F_9(\lambda)-S_0+\tfrac12\|m\|^2}{\Gamma}.
+\]
+Since $\Gamma>0$, both objectives have the same minimizers on $\Lambda$.
+This conversion is required to report a dual value in the units of (6).
+
+\textbf{Proof of the threshold.}
+Summing the row caps requires $M\le Nq=\kappa$. Conversely, if $M\le\kappa$,
+give one action in each row mass $M/N$ and all other actions zero. This is
+feasible, including at equality. For $\kappa<M$, put
+$K=\max_{i,a}|g_{ia}|$. For $t\ge0$ the assignment
+$z=0$, $b=t$, $s_i=ht+K$ is primal feasible. Its value is
+$(1-\kappa h)t-\kappa K$, which tends to $+\infty$.
+
+\textbf{Proof of the upper bound and weight formula.}
+For feasible $\lambda$ set $z_\lambda=(m-v(\lambda))/\Gamma$ and let
+$\rho_{ia}=g_{ia}+s_i-\langle d_{ia},z\rangle-hb$ be the slack in a
+primal constraint. Completing the square and using $\sum_{i,a}\lambda_{ia}=M$
+gives the identity
+\begin{equation}
+\begin{aligned}
+ G(\lambda)-P(z,b,s)
+  ={}&\tfrac{\Gamma}{2}\|z-z_\lambda\|^2
+     +\sum_{i,a}\lambda_{ia}\rho_{ia}
+     +\sum_i\Big(q-\sum_a\lambda_{ia}\Big)s_i .
+\end{aligned}\tag{*}
+\end{equation}
+Each term on the right is nonnegative for feasible variables. Thus $G$
+bounds every primal value from above, and equality forces $z=z_\lambda$.
+It remains to construct feasible variables attaining equality.
+
+\newpage
+\section*{Attainment, including at the threshold}
+Assume $\kappa\ge M$. The nonempty set $\Lambda$ is a closed, bounded
+polytope in $\mathbb R^{N|\mathcal A|}$. The continuous function $G$ attains
+its minimum there. Fix a minimizer $\lambda^*$ and put $z=z_{\lambda^*}$.
+Define $c_{ia}=g_{ia}-\langle d_{ia},z\rangle$. For any $\lambda\in\Lambda$,
+the segment from $\lambda^*$ to $\lambda$ is feasible. The right derivative
+of $G$ along this segment at its starting point is
+\[
+  \sum_{i,a}c_{ia}(\lambda_{ia}-\lambda^*_{ia})\ \ge\ 0 .
+\]
+Consequently $\lambda^*$ also minimizes the linear cost
+$\sum_{i,a}c_{ia}\lambda_{ia}$ over $\Lambda$.
+
+Let $r_i=\min_a c_{ia}$, and list the $N$ row minima in increasing order,
+with repetitions. Set $u$ equal to entry $\lceil M/q\rceil$ in this list
+(numbering from one). The assumptions give $0<M\le Nq$ and $q>0$, so
+this entry exists. For a real number $t$, write $t_+=\max(t,0)$.
+Every feasible allocation satisfies
+\[
+  \sum_{i,a}c_{ia}\lambda_{ia}
+   \ \ge\ uM+\sum_i(r_i-u)\sum_a\lambda_{ia}
+   \ \ge\ uM-q\sum_i(u-r_i)_+ .
+\]
+To attain this bound, fill every row with $r_i<u$ to its cap $q$, place
+the remaining mass in rows with $r_i=u$ up to their caps, and put zero in
+higher-cost rows. In each used row place all its mass on a minimizing action.
+The choice of $u$ gives enough capacity even with ties or $M=Nq$.
+Since $\lambda^*$ minimizes the linear cost, it achieves this same value.
+
+Choose $b=u/h$ and $s_i=(u-r_i)_+$. These variables are feasible in (6)
+because $c_{ia}+s_i\ge u=hb$. Also
+\[
+   b-q\sum_i s_i=uM-q\sum_i(u-r_i)_+
+            =\sum_{i,a}c_{ia}\lambda^*_{ia}.
+\]
+In (*) the square vanishes by the choice of $z$. The two remaining sums
+together equal $\sum_{i,a} c_{ia}\lambda^*_{ia}-b+q\sum_i s_i=0$.
+This gives a primal optimizer with value $G(\lambda^*)$. Applying (*) to
+any other primal optimizer proves the weight formula for every optimal pair.
+\hfill$\square$
+
+\textbf{A check with nonzero features.}
+Take $N=1$, $\nu=\pi$ uniform on two states, and a realized draw at the
+state with scalar feature $1$. Its only action costs $1$ and moves to the
+state with feature $0$ (which can self-loop at cost zero).
+Set $\alpha=1/2$, $\Gamma=2$, $\kappa=2$. Then $m=d_{11}=1$ and $\lambda=2$
+is forced. The recovered weight is $-1/2$ and $(z,b,s)=(-1/2,3,0)$ attains
+$9/4$. The printed objective is $3$, and (9$'$) gives $9/4$.
+
+{\small\textbf{Formalization status.}
+Module \declaration{Kadp.Duality} verifies the threshold, unboundedness
+below it, objective normalization, dual attainment, (*) and recovery at
+zero gap. The construction of a zero-gap primal point on this page is the
+remaining step for the general Lean theorem.}
 \end{document}
