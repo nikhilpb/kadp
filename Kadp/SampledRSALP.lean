@@ -20,7 +20,6 @@ structure SampledRSALP (S A H : Type*) [Fintype S] (N : ℕ) where
   π : S → ℝ
   ν_pos : ∀ x, 0 < ν x
   π_pos : ∀ x, 0 < π x
-  ν_sum : ∑ x, ν x = 1
   π_sum : ∑ x, π x = 1
   α : ℝ
   α_pos : 0 < α

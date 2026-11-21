@@ -129,14 +129,18 @@ noncomputable def constraintMargin (z : H) (b : ℝ) (s : Fin N → ℝ) (i : Fi
   D.cost (D.sample i) a + s i - inner ℝ (D.featureDiff i a) z - (1 - D.α) * b
 
 omit [Fintype A] in
-private theorem constraintMargin_nonneg {z : H} {b : ℝ} {s : Fin N → ℝ}
-    (hf : D.PrimalFeasible z b s) (i : Fin N) (a : A) :
-    0 ≤ D.constraintMargin z b s i a := by
-  have h := hf.2 i a
+theorem primalFeasible_iff_margins (z : H) (b : ℝ) (s : Fin N → ℝ) :
+    D.PrimalFeasible z b s ↔ (∀ i, 0 ≤ s i) ∧ ∀ i a, 0 ≤ D.constraintMargin z b s i a := by
+  unfold PrimalFeasible
+  apply and_congr_right
+  intro _
+  apply forall_congr'
+  intro i
+  apply forall_congr'
+  intro a
   simp only [value, mul_add, Finset.sum_add_distrib, ← Finset.sum_mul, D.transition_sum,
-    one_mul] at h
-  simp only [constraintMargin, featureDiff_eq, inner_sub_left, real_inner_smul_left, sum_inner]
-  linarith
+    one_mul, constraintMargin, featureDiff_eq, inner_sub_left, real_inner_smul_left, sum_inner]
+  constructor <;> intro h <;> linarith
 
 omit [Fintype A] [DecidableEq S] in
 private theorem primalObjective_eq (z : H) (b : ℝ) (s : Fin N → ℝ) :
@@ -183,7 +187,7 @@ theorem weightError_le_gap {z : H} {b : ℝ} {s : Fin N → ℝ} {l : Fin N → 
   rw [D.dualityGap l hd]
   exact le_add_of_le_of_nonneg (le_add_of_nonneg_right
     (Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun a _ =>
-      mul_nonneg (hd.1 i a) (D.constraintMargin_nonneg hp i a)))
+      mul_nonneg (hd.1 i a) (((D.primalFeasible_iff_margins z b s).mp hp).2 i a)))
     (Finset.sum_nonneg fun i _ => mul_nonneg (sub_nonneg.mpr (hd.2.1 i)) (hp.1 i))
 
 theorem weakDuality {z : H} {b : ℝ} {s : Fin N → ℝ} {l : Fin N → A → ℝ}

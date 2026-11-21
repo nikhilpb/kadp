@@ -19,7 +19,6 @@ noncomputable def singleton (g k : ℝ) (hk : 0 < k) : SampledRSALP Unit Unit �
   π := fun _ => 1
   ν_pos := by simp
   π_pos := by simp
-  ν_sum := by simp
   π_sum := by simp
   α := 1 / 2
   α_pos := by norm_num

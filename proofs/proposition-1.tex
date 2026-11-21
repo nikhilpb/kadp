@@ -213,29 +213,31 @@ It remains to construct feasible variables attaining equality.
 Assume $\kappa\ge M$. The nonempty set $\Lambda$ is a closed, bounded
 polytope in $\mathbb R^{N|\mathcal A|}$. The continuous function $G$ attains
 its minimum there. Fix a minimizer $\lambda^*$ and put $z=z_{\lambda^*}$.
-Define $c_{ia}=g_{ia}-\langle d_{ia},z\rangle$. For any $\lambda\in\Lambda$,
-the segment from $\lambda^*$ to $\lambda$ is feasible. The right derivative
-of $G$ along this segment at its starting point is
+Define $c_{ia}=g_{ia}-\langle d_{ia},z\rangle$. For any $\lambda\in\Lambda$ and
+$0<t\le1$, the point $\lambda_t=(1-t)\lambda^*+t\lambda$ is feasible.
+Expanding the square in (9$'$) gives
 \[
-  \sum_{i,a}c_{ia}(\lambda_{ia}-\lambda^*_{ia})\ \ge\ 0 .
+  0\le\frac{G(\lambda_t)-G(\lambda^*)}{t}
+    =\sum_{i,a}c_{ia}(\lambda_{ia}-\lambda^*_{ia})
+       +\frac{t}{2\Gamma}\|v(\lambda)-v(\lambda^*)\|^2 .
 \]
-Consequently $\lambda^*$ also minimizes the linear cost
+Letting $t$ decrease to zero shows that $\lambda^*$ also minimizes
 $\sum_{i,a}c_{ia}\lambda_{ia}$ over $\Lambda$.
 
-Let $r_i=\min_a c_{ia}$, and list the $N$ row minima in increasing order,
-with repetitions. Set $u$ equal to entry $\lceil M/q\rceil$ in this list
-(numbering from one). The assumptions give $0<M\le Nq$ and $q>0$, so
-this entry exists. For a real number $t$, write $t_+=\max(t,0)$.
+Let $r_i=\min_a c_{ia}$. Choose the smallest row cost $u$ for which
+$q\,\#\{i:r_i\le u\}\ge M$. Such a cost exists because $0<M\le Nq$.
+The rows strictly below $u$ have total capacity less than $M$ by minimality.
+For a real number $t$, write $t_+=\max(t,0)$.
 Every feasible allocation satisfies
 \[
   \sum_{i,a}c_{ia}\lambda_{ia}
    \ \ge\ uM+\sum_i(r_i-u)\sum_a\lambda_{ia}
    \ \ge\ uM-q\sum_i(u-r_i)_+ .
 \]
-To attain this bound, fill every row with $r_i<u$ to its cap $q$, place
-the remaining mass in rows with $r_i=u$ up to their caps, and put zero in
-higher-cost rows. In each used row place all its mass on a minimizing action.
-The choice of $u$ gives enough capacity even with ties or $M=Nq$.
+To attain this bound, fill every row with $r_i<u$ to its cap $q$, split
+the remaining mass equally among the rows with $r_i=u$, and put zero in
+higher-cost rows. Each tied row receives at most $q$ by the choice of $u$.
+Put each row's mass on one minimizing action. When $M=Nq$ this fills every row.
 Since $\lambda^*$ minimizes the linear cost, it achieves this same value.
 
 Choose $b=u/h$ and $s_i=(u-r_i)_+$. These variables are feasible in (6)
@@ -258,9 +260,11 @@ Set $\alpha=1/2$, $\Gamma=2$, $\kappa=2$. Then $m=d_{11}=1$ and $\lambda=2$
 is forced. The recovered weight is $-1/2$ and $(z,b,s)=(-1/2,3,0)$ attains
 $9/4$. The printed objective is $3$, and (9$'$) gives $9/4$.
 
-{\small\textbf{Formalization status.}
-Module \declaration{Kadp.Duality} verifies the threshold, unboundedness
-below it, objective normalization, dual attainment, (*) and recovery at
-zero gap. The construction of a zero-gap primal point on this page is the
-remaining step for the general Lean theorem.}
+{\small\textbf{Lean proof.}
+The theorem \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/PrimalAttainment.lean}
+{\declaration{correctedProposition1}} proves both regimes and recovery for every
+optimal pair. Its proof uses the
+\href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Allocation.lean}{finite allocation lemma}
+above and the \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Duality.lean}{gap identity}~(*).
+The same module gives primal recovery from a minimizer of printed~(9).}
 \end{document}

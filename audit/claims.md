@@ -5,7 +5,7 @@ Page numbers below are the printed pages of the August 29, 2022 version. Status 
 ## Shared hypotheses and notation
 
 - **Model.** Finite nonempty state and action spaces, stochastic transition rows, a real cost $g$, and $0<\alpha<1$. Features take values in a real Hilbert space. The value approximation is $J(x)=\langle\Phi(x),z\rangle+b$.
-- **Sampled programs.** Equations (6) and (9) use $N>0$ draws from a positive distribution $\pi$, weights $w=\nu/\pi$, and $\Gamma,\kappa>0$. The Lean model normalizes $\nu$ as in §2.5. Both witnesses also satisfy the broader positive-weight convention on p. 5. Indexing by draw retains multiplicities. Both examples have a single possible draw of probability one.
+- **Sampled programs.** Equations (6) and (9) use $N>0$ draws from a positive distribution $\pi$, weights $w=\nu/\pi$, and $\Gamma,\kappa>0$. The theorem allows arbitrary strictly positive relevance weights $\nu$, including the distribution convention in §2.5. Indexing by draw retains multiplicities. Both examples have a single possible draw of probability one.
 - **Idealized program.** For (18), $\nu$ is a distribution, $\mu^*$ is optimal, and the draws are independent from its discounted occupancy $\pi_{\mu^*,\nu}$ in (17). The admissible parameters obey $\|z\|\le C$ and $|b|\le B$. Define $K=\max_x\|\Phi(x)\|$, $D=4CK(1+\alpha)+4B(1-\alpha)+2\|g\|_\infty$, and $\Xi=D(1+\sqrt{2\ln(1/\delta)})$. In the rows below, the sample threshold is $N\ge\Xi^2/\epsilon^2$. Theorems 1 and 2 print $\epsilon,\delta>0$. Check the domain of the square root and degenerate envelopes when formalizing the probability claims.
 - **Classes.** With fixed policy $\mu$, write $L_\mu$ for the linear class in Lemma 2, $F_\mu$ for $(J-T_\mu J)^+$ and $F$ for $(J-TJ)^+$ with the admissible parameters above. $P$ and $P_N$ are population and empirical means. $R_N$ is the paper's expected one-sided Rademacher complexity with factor $2/N$.
 
@@ -13,7 +13,7 @@ Page numbers below are the printed pages of the August 29, 2022 version. Status 
 
 | Claim | Hypotheses and conclusion | Proof dependencies | Status |
 | --- | --- | --- | --- |
-| Proposition 1, p. 8 | For the sampled programs, both optima are finite, attained and equal. An optimal multiplier recovers a primal weight by (10). | (6)–(10), Appendix A | **Refuted as printed.** A replacement has a written proof. Its Lean verification status is detailed below. |
+| Proposition 1, p. 8 | For the sampled programs, both optima are finite, attained and equal. An optimal multiplier recovers a primal weight by (10). | (6)–(10), Appendix A | **Refuted as printed.** The replacement is proved in Lean, including equality at the threshold. |
 | Theorem 1, p. 13 | At the sample threshold, an optimizer of (18) has $\nu$-weighted absolute error bounded by $(3+\alpha)/(1-\alpha)$ times the best admissible sup-norm error plus $4\epsilon/(1-\alpha)$, with probability at least $1-\delta-\delta^4$. | Theorem 2 with $\psi=1$ | Open |
 | Proposition 2, p. 18 | Every feasible suboptimal point of (9) admits a feasible strict descent direction with exactly two nonzero coordinates. | Gram positivity in (7), row caps, mass equality, Lemma 4 and Appendix D | Open |
 | Theorem 2, p. 28 | Same optimizer, sample threshold and confidence as Theorem 1. Bound (25) takes the infimum over admissible $z,b$ and $\psi\ge1$ of the weighted sup-error times $\nu^\top\psi+2(\pi_{\mu^*,\nu}^\top\psi)(1+\alpha\beta(\psi))/(1-\alpha)$, then adds $4\epsilon/(1-\alpha)$. Here $\beta(\psi)=\max_{x,a}(P_a\psi)(x)/\psi(x)$. | (17), (18), (26), Lemma 3, Theorem 3, SALP residual bounds | Open |
@@ -35,7 +35,15 @@ Both instances use one state, action and draw, unit transition and distribution 
 
 **Replacement proposition.** Below $\kappa=1/(1-\alpha)$, the primal is unbounded and the dual infeasible for every realized sample. At or above the threshold, both optima are attained, the normalized dual value equals the primal maximum, and every minimizing multiplier recovers the unique optimal primal weight by (10). Pages 3–4 derive the objective, prove the result, and work an equality-case example with nonzero features. [Proof note](../proofs/proposition-1.pdf)
 
-**Lean verification.** In `Kadp.SampledRSALP`, `dualFeasible_iff_penalty` proves the sharp feasibility threshold, and `primal_unbounded_of_penalty_lt` proves the general unboundedness result. `dualObjective_normalization` proves the scale and offset identity with printed (9). `exists_dual_minimizer` proves attainment of the corrected dual minimum. `dualityGap`, `weakDuality`, and `recoveredWeight_of_equal_values` prove the exact gap identity, upper bound, and recovery for a feasible pair with equal values. **Open in Lean:** construct a feasible primal point attaining that upper bound for a minimizing multiplier, including tied costs and fully saturated rows at the threshold. [Lean declarations](../Kadp/Duality.lean)
+**Lean verification.** The theorem `Kadp.SampledRSALP.correctedProposition1` proves both regimes, including a greatest primal value, a least corrected dual value, and recovery for every optimal pair. The table identifies its proof steps.
+
+| Step | Declaration |
+| --- | --- |
+| Feasibility threshold and unboundedness below it | `dualFeasible_iff_penalty`, `primal_unbounded_of_penalty_lt` in [Duality](../Kadp/Duality.lean) |
+| Normalization, dual attainment, gap identity and weight recovery at zero gap | `dualObjective_normalization`, `exists_dual_minimizer`, `dualityGap`, `recoveredWeight_of_equal_values` in [Duality](../Kadp/Duality.lean) |
+| Allocate the required mass under row caps, including ties and full capacity | `Kadp.exists_cutoff_allocation` in [Allocation](../Kadp/Allocation.lean) |
+| Construct a feasible intercept and slacks for every minimizing multiplier | `primal_attains_of_dual_minimizer` in [PrimalAttainment](../Kadp/PrimalAttainment.lean) |
+| Apply the result directly to a minimizer of the printed QP (9) | `dualObjective_le_iff`, `primal_attains_of_printed_dual_minimizer` in [PrimalAttainment](../Kadp/PrimalAttainment.lean) |
 
 **Downstream effects.** Positive affine normalization preserves the optimizer, the improving directions and the stopping criterion for the QP of §4. In §2.5, dropping the additive constant is valid for computing a policy. Use (10) and the coefficients of (7)–(8) as the reference when checking the kernel formulas (11)–(14). The experiment on p. 20 uses $\kappa=2/(1-\alpha)$, which clears the threshold. The approximation theorem uses the distinct program (18) and still needs its own proof audit. [Algorithm](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=10) · [Approximation guarantee](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=12) · [Experiment](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=20)
 
