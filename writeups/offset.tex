@@ -1,0 +1,112 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[top=22mm,bottom=24mm,left=27mm,right=27mm]{geometry}
+\usepackage{amsmath,amssymb,xcolor}
+\definecolor{link}{HTML}{205973}
+\usepackage[hypertexnames=false,colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
+\hypersetup{pdftitle={The intercept in the idealized sampled program}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\raggedbottom
+\newcommand{\R}{\mathbb R}
+\newcommand{\lead}[1]{\par\smallskip\noindent\textbf{#1}\enspace}
+\begin{document}
+{\LARGE\bfseries The intercept bound in program (18)\par}
+\medskip
+Section 3.2 of Bhat, Farias, Moallemi and Zheng gives a bound on the
+intercept of (18). In a two-state model the printed bound can reduce the
+optimal value after a single draw. The central order statistics of the sampled Bellman
+errors determine exactly which intercepts maximize the objective.
+
+\section*{The sampled problem and its optimal intercepts}
+Let \(x_1,\ldots,x_N\), \(N\ge1\), be the sampled states in a finite Markov
+decision process with stage costs \(g_{x,a}\), transition probabilities
+\(p(x,y,a)\), and discount \(0<\alpha<1\). Each draw contributes one
+term, including repeated states. For a real Hilbert space feature map
+\(\Phi\), write \(V_z(x)=\langle\Phi(x),z\rangle\) and \(J=V_z+b\).
+With an initial distribution \(\nu\) and radii \(C,B\ge0\), the program is
+\begin{equation}
+\begin{aligned}
+ \operatorname{maximize}_{z,b,s}\quad &\nu^\top J-\frac{2}{(1-\alpha)N}\sum_{i=1}^N s_i\\
+ \text{subject to}\quad &J(x_i)\le (TJ)(x_i)+s_i,\quad s_i\ge0,\quad
+ \|z\|\le C,\quad |b|\le B,
+\end{aligned}\tag{18}
+\end{equation}
+where \((TV)(x)=\min_a\{g_{x,a}+\alpha\sum_y p(x,y,a)V(y)\}\).
+The free problem allows any real \(b\).
+
+\lead{Fixed feature weight.}
+For fixed \(z\), put \(t_i=((TV_z)(x_i)-V_z(x_i))/(1-\alpha)\).
+Since each transition row sums to one, \(T(V_z+b)=TV_z+\alpha b\).
+The least feasible slack is therefore \(s_i=(1-\alpha)(b-t_i)_+\),
+where \(u_+=\max(u,0)\). The slack penalty is strictly positive,
+so every optimum uses these slacks. Substitution, using
+\(2u_+=u+|u|\) and \(\nu^\top\mathbf 1=1\), gives the objective
+\[
+ F(z,b)=\nu^\top V_z+\frac1N\sum_{i=1}^Nt_i
+                   -\frac1N\sum_{i=1}^N|b-t_i|.
+\]
+Sort the breakpoints as \(t_{(1)}\le\cdots\le t_{(N)}\). The complete
+set of maximizing free intercepts at this \(z\) is
+\[
+ I_z=[\,t_{(\lceil N/2\rceil)},\ t_{(\lfloor N/2\rfloor+1)}\,].
+\]
+Indeed, pair the smallest breakpoint with the largest, the second
+with the second largest, and so on. For \(u\le v\),
+\(|b-u|+|b-v|\ge v-u\), with equality precisely for \(u\le b\le v\).
+Intersect the paired intervals, including the middle singleton for odd
+\(N\). Their intersection is exactly \(I_z\), also when breakpoints repeat.
+
+Feasibility alone places no upper limit on a free intercept. Every real
+\(b\) is feasible with the slacks displayed above. The bound on the next
+page concerns optimizing triples.
+
+\newpage
+\section*{A uniform bound for every optimizer}
+Put \(K=\max_x\|\Phi(x)\|\) and \(G=\max_{x,a}|g_{x,a}|\). For any
+\(\|z\|\le C\), both \(|V_z(x)|\) and \(|\sum_y p(x,y,a)V_z(y)|\)
+are at most \(CK\). Thus every feasible action has
+\[
+ \left|g_{x,a}+\alpha\sum_y p(x,y,a)V_z(y)-V_z(x)\right|
+ \le G+(1+\alpha)CK .
+\]
+Taking the action minimum keeps each breakpoint within \([-R,R]\), where
+\[
+ \boxed{\displaystyle R=\frac{G+(1+\alpha)CK}{1-\alpha}.}
+\]
+Every free optimizer has \(b\in I_z\subseteq[-R,R]\). Conversely each
+feasible free point is dominated by choosing a median at the same \(z\)
+and using its least feasible slacks. Hence \(B\ge R\) preserves the
+optimal value and all optimizing triples. Existence follows by projecting
+\(z\) onto the span of the finitely many feature vectors. This preserves
+the fits and the norm bound. With \(B=R\), the reduced objective is
+continuous on a compact parameter set.
+If \(B>R\), every maximizing intercept is strictly inside its box.
+
+For an individual \(z\), preserving its best value only requires
+\([-B,B]\cap I_z\ne\varnothing\). Equality of the full maximizing
+intercept sets requires \(I_z\subseteq[-B,B]\). For example, take two
+absorbing states, \(\alpha=1/2\), costs \(-1/2,+1/2\), and zero features.
+With one draw of each state, \(I_z=[-1,1]\). A box of radius \(1/2\)
+keeps the best value and removes some optimal intercepts.
+
+\section*{A counterexample to the printed threshold}
+Let \(\alpha=1/2\), \(C=1\), and \(\Phi(u)=-1,\ \Phi(v)=1\).
+There is one action, zero cost, and both states move to \(v\). Start
+uniformly and take \(N=1\). The discounted occupancy assigns mass
+\((1-\alpha)\nu(u)=1/4\) to \(u\), since only time zero can visit it.
+On drawing \(u\), the true objective and constraints reduce to
+\[
+ \max\ b-4s,\qquad |z|\le1,\qquad s\ge0,\qquad b-3z\le2s.
+\]
+The free value is \(3\), attained at \((z,b,s)=(1,3,0)\), since \(b-4s\le3z-2s\le3\). The printed threshold
+\(2CK+G/(1-\alpha)=2\) permits \(B=5/2\). The boxed value is
+\(5/2\), attained at \((1,5/2,0)\), since \(b-4s\le B\).
+Here \(R=3\), so equality \(B=R\) can put an optimum on the boundary.
+More generally, giving both states cost \(G\), features \(-K,+K\),
+and taking \(z=C\) yields breakpoint \(R\) and attains the free
+maximum there. This proves sharpness using only \(G,C,K,\alpha\).
+
+{\small\textbf{Sources.}
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=12}{Bhat, Farias, Moallemi and Zheng, (18) and \S3.2, pp. 12--13}.
+\href{https://github.com/nikhilpb/kadp/blob/main/lean/Offset.lean}{Lean proofs and the two-state witness}.}
+\end{document}

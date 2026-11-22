@@ -1,0 +1,256 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[top=22mm,bottom=24mm,left=27mm,right=27mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\definecolor{link}{HTML}{205973}
+\usepackage[colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
+\hypersetup{pdftitle={Strong duality for sampled value-function approximation}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\raggedbottom
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\R}{\mathbb R}
+\newcommand{\lead}[1]{\par\smallskip\noindent\textbf{#1}\enspace}
+
+\begin{document}
+
+{\LARGE\bfseries Strong duality for sampled\\[2pt] value-function approximation\par}
+\medskip
+The sampled value-function approximation problem and its finite-dimensional
+dual attain the same optimal value whenever the dual is feasible. From any
+dual minimizer, we recover the unique optimal weight and construct an
+intercept and slacks that attain this value in the primal problem.
+
+\section*{The model and the two optimization problems}
+Let \(\mathcal S\) and \(\mathcal A\) be finite, nonempty state and action sets.
+Action \(a\) at state \(x\) costs \(g_{x,a}\in\R\) and moves to \(y\) with probability
+\(p(x,y,a)\). The probabilities are nonnegative and sum to one over \(y\).
+For a function \(f\) of the next state \(X'\), write
+\(\mathbb E_{x,a}[f(X')]=\sum_{y\in\mathcal S}p(x,y,a)f(y)\).
+Future costs are discounted by \(0<\alpha<1\).
+A feature map \(\Phi\) takes states into a real Hilbert space \(\mathcal H\)
+with inner product \(\ip{\cdot}{\cdot}\) and norm \(\norm{\cdot}\).
+Write \(\mathbf x=\Phi(x)\) and \(\mathbf X'=\Phi(X')\). The fitted cost-to-go
+is \(\widetilde J_{\mathbf z,b}(x)=\ip{\mathbf x}{\mathbf z}+b\), with
+weight \(\mathbf z\in\mathcal H\) and intercept \(b\in\R\).
+
+Let \(\widehat{\mathcal S}\) be a sample of \(N\ge1\) independent draws from
+a distribution \(\pi\) with \(\pi_x>0\) on \(\mathcal S\). Fix the realized sample.
+Each \(x\in\widehat{\mathcal S}\) indexes one draw, so repeated states contribute
+separate rows. Let \(w_x=\nu_x/\pi_x\), where \(\nu_x>0\) is the relevance
+weight of state \(x\). Below, \(\sum_x\) sums over draws and \(\sum_a\) over actions.
+
+\lead{Primal problem.} Fix penalties \(\kappa,\Gamma>0\). Choose
+\(\mathbf z\), \(b\), and one nonnegative slack \(s_x\) per draw to solve
+\[
+ \begin{aligned}
+   \text{maximize}\quad &P(\mathbf z,b,s)=
+     \frac1N\sum_x w_x\ip{\mathbf x}{\mathbf z}+b
+       -\frac{\kappa}{N}\sum_x s_x-\frac{\Gamma}{2}\norm{\mathbf z}^2\\
+   \text{subject to}\quad &
+     \widetilde J_{\mathbf z,b}(x)\le g_{x,a}
+        +\alpha\mathbb E_{x,a}[\widetilde J_{\mathbf z,b}(X')]+s_x
+        \quad\text{for every }x,a .
+ \end{aligned}
+ \tag{P}
+\]
+The slack \(s_x\) bounds how far the fitted value at \(x\) may exceed the
+immediate cost plus the discounted expected continuation value for any action.
+
+\lead{Dual problem.} Let \(\lambda_{x,a}\) be the multiplier for draw \(x\)
+and action \(a\). For the dual objective and its proof, write
+\[
+ m=\frac1N\sum_x w_x\mathbf x,\qquad
+ d_{x,a}=\mathbf x-\alpha\mathbb E_{x,a}[\mathbf X'],\qquad
+ v(\lambda)=\sum_{x,a}\lambda_{x,a}d_{x,a}.
+\]
+The dual minimizes
+\[
+ \begin{aligned}
+   &G(\lambda)=\sum_{x,a}g_{x,a}\lambda_{x,a}
+       +\frac{1}{2\Gamma}\norm{m-v(\lambda)}^2\\
+   &\text{subject to}\quad \lambda_{x,a}\ge0,\qquad
+        \sum_a\lambda_{x,a}\le\frac{\kappa}{N},\qquad
+        \sum_{x,a}\lambda_{x,a}=\frac{1}{1-\alpha}.
+ \end{aligned}
+ \tag{D}
+\]
+Denote the set of feasible multipliers by \(\Lambda\).
+
+\newpage
+\section*{Strong duality and weight recovery}
+\textbf{Proposition.} Fix any realization of the sample and assume
+\(\kappa\ge 1/(1-\alpha)\). Then (P) and (D) attain the same finite optimal
+value. For every minimizer \(\lambda^*\) of \(G\) on \(\Lambda\), the weight
+of every primal maximizer is
+\[
+ \mathbf z^*=\frac{1}{\Gamma}\left[
+     \frac1N\sum_{x\in\widehat{\mathcal S}} w_x\mathbf x
+     -\sum_{x,a}\lambda^*_{x,a}
+        \bigl(\mathbf x-\alpha\mathbb E_{x,a}[\mathbf X']\bigr)\right].
+             \tag{1}\label{eq:weight}
+\]
+In particular the optimal weight is unique. The worked example illustrates
+how the intercept and slacks can vary at the threshold.
+
+\lead{Existence of a dual minimizer.}
+Split the required mass \(1/(1-\alpha)\) equally among the \(N\) rows and
+place each row's share on a single action. Each share is
+\(1/[N(1-\alpha)]\le\kappa/N\) by hypothesis, so the assignment is feasible
+even at equality. The linear constraints define a closed set, and each
+multiplier lies between \(0\) and \(\kappa/N\). Hence \(\Lambda\) is
+compact in a finite-dimensional space. The continuous function \(G\)
+attains a minimum there.
+
+\lead{Why the dual bounds the primal.}
+For a primal point \((\mathbf z,b,s)\), let
+\(\rho_{x,a}=g_{x,a}+s_x-\ip{d_{x,a}}{\mathbf z}-(1-\alpha)b\) be the margin in its
+\((x,a)\) constraint. Add these margins to \(P\) with nonnegative weights
+\(\lambda_{x,a}\). Collecting terms gives
+\[
+\begin{aligned}
+ P+\sum_{x,a}\lambda_{x,a}\rho_{x,a}
+   ={}&\sum_{x,a}g_{x,a}\lambda_{x,a}
+        +\ip{m-v(\lambda)}{\mathbf z}-\tfrac{\Gamma}{2}\norm{\mathbf z}^2\\
+     &+\Bigl(1-(1-\alpha)\sum_{x,a}\lambda_{x,a}\Bigr)b
+       +\sum_x\bigl(\sum_a\lambda_{x,a}-\tfrac{\kappa}{N}\bigr)s_x .
+\end{aligned}
+\]
+For this expression to have a finite supremum over unrestricted \(b\)
+and nonnegative \(s\), the coefficient of \(b\) must vanish and each
+coefficient of \(s_x\) must be nonpositive. These are exactly the mass
+and capacity constraints in (D). For \(\lambda\in\Lambda\), put
+\(\mathbf z_\lambda=(m-v(\lambda))/\Gamma\). Completing the square in \(\mathbf z\)
+gives the exact gap
+\begin{equation}
+  G(\lambda)-P(\mathbf z,b,s)
+  =\frac{\Gamma}{2}\norm{\mathbf z-\mathbf z_\lambda}^2
+      +\sum_{x,a}\lambda_{x,a}\rho_{x,a}
+      +\sum_x\bigl(\tfrac{\kappa}{N}-\sum_a\lambda_{x,a}\bigr)s_x .
+  \tag{2}\label{eq:gap}
+\end{equation}
+For feasible \((\mathbf z,b,s)\), every term on the right of \eqref{eq:gap} is
+nonnegative. Hence every dual value bounds every primal value from above.
+Equality forces \(\mathbf z=\mathbf z_\lambda\). To finish the proof, we construct an
+intercept and slacks that make the gap zero at a dual minimizer.
+
+\newpage
+\section*{Constructing a primal optimizer}
+Fix any minimizer \(\lambda^*\) of \(G\) and set
+\(\mathbf z=\mathbf z_{\lambda^*}\). For this fixed weight define the adjusted costs
+\(c_{x,a}=g_{x,a}-\ip{d_{x,a}}{\mathbf z}\). The primal constraints now read
+\((1-\alpha)b\le c_{x,a}+s_x\). The cheapest action in each row will determine the intercept.
+
+\lead{Why the adjusted costs suffice.}
+Write \(L(\lambda)=\sum_{x,a}c_{x,a}\lambda_{x,a}\). Fix any
+\(\lambda\in\Lambda\). For \(0<t\le1\) the point
+\(\lambda_t=(1-t)\lambda^*+t\lambda\) is feasible. Expanding the square in
+the dual objective gives
+\[
+  0\le\frac{G(\lambda_t)-G(\lambda^*)}{t}
+   = L(\lambda)-L(\lambda^*)
+     +\frac{t}{2\Gamma}\norm{v(\lambda)-v(\lambda^*)}^2 .
+\]
+The last term tends to zero as \(t\) decreases to zero. Thus \(\lambda^*\)
+minimizes the linear cost \(L\) over \(\Lambda\).
+
+\lead{How to attain the minimum linear cost.}
+Let \(r_x=\min_a c_{x,a}\). Order the \(N\) rows by \(r_x\), from cheapest
+to most expensive. Give each row capacity \(\kappa/N\). Let \(u\) be the cost of the first row
+at which the cumulative capacity reaches or exceeds \(1/(1-\alpha)\).
+Such a row exists because the total capacity is \(\kappa\). The rows strictly
+cheaper than \(u\) cannot hold all the mass, but including the rows tied at
+\(u\) gives enough capacity.
+
+Write \((t)_+=\max(t,0)\). For every feasible allocation,
+\[
+ L(\lambda)\ \ge\ \frac{u}{1-\alpha}+\sum_x(r_x-u)\sum_a\lambda_{x,a}
+                  \ \ge\ \frac{u}{1-\alpha}-\frac{\kappa}{N}\sum_x(u-r_x)_+ .
+\]
+The first inequality uses \(c_{x,a}\ge r_x\). For the second, a row cheaper
+than \(u\) holds at most \(\kappa/N\), and a more expensive row contributes a
+nonnegative amount. To attain both bounds, fill each cheaper row to capacity,
+split the remaining mass equally among the rows tied at \(u\), and leave
+the more expensive rows empty. In each occupied row, put its mass on an action
+of cost \(r_x\). At \(\kappa=1/(1-\alpha)\) this fills every row. Since \(\lambda^*\)
+minimizes \(L\), its cost is exactly this lower bound.
+
+\lead{The intercept and slacks.}
+The cutoff \(u\) gives an intercept and slacks through
+\[
+               b=\frac{u}{1-\alpha},\qquad s_x=(u-r_x)_+ .
+\]
+Indeed \(c_{x,a}+s_x\ge r_x+(u-r_x)_+\ge u=(1-\alpha)b\), so the point is feasible.
+The construction gives
+\[
+      L(\lambda^*)=\frac{u}{1-\alpha}-\frac{\kappa}{N}\sum_x(u-r_x)_+=b-\frac{\kappa}{N}\sum_x s_x .
+\]
+In \eqref{eq:gap} the square vanishes because \(\mathbf z=\mathbf z_{\lambda^*}\).
+The other two terms sum to \(L(\lambda^*)-b+(\kappa/N)\sum_x s_x=0\).
+This primal point therefore attains the dual minimum. Applying
+\eqref{eq:gap} to any optimal pair proves the weight formula~\eqref{eq:weight}.
+\hfill\(\square\)
+
+\newpage
+\section*{A worked example at the threshold}
+Take two states \(x,y\), one action, and one draw at \(x\). The action at
+\(x\) costs \(1\) and moves to \(y\). At \(y\) it costs \(0\) and stays
+there. Use scalar features \(\Phi(x)=1,\ \Phi(y)=0\), uniform
+\(\nu=\pi\), discount \(\alpha=1/2\), and penalties \(\Gamma=\kappa=2\).
+Then \(w_x=1\) and the sole feature difference and the mean feature both
+equal \(1\). The dual has one multiplier. Its required mass and its cap
+both equal \(2\), so \(\lambda^*=2\). Direct substitution gives
+\[
+     \mathbf z^*=\frac{1-2}{2}=-\tfrac12,\qquad
+     G(2)=2+\frac{(1-2)^2}{4}=\tfrac94 .
+\]
+The adjusted cost is \(1-(-1/2)=3/2\), so the construction gives
+\(b=3,\ s_x=0\). The primal constraint holds with equality and
+\(P(-1/2,3,0)=-1/2+3-1/4=9/4\).
+Increasing \(b\) by any \(t\ge0\) and \(s_x\) by \(t/2\) preserves both
+feasibility and value. Only the primal weight is forced in this example.
+
+\section*{Differences from the original proposition}
+Proposition~1 of Bhat, Farias, Moallemi and Zheng asserts, for positive
+penalties, that the primal and their quadratic program attain the same
+finite value and that an optimal multiplier recovers an optimal primal
+weight. Two changes give the theorem proved here.
+
+\lead{1. The penalty threshold.}
+The total row capacity is \(\kappa\), while the required mass is \(1/(1-\alpha)\).
+This gives the lower bound in the proposition. To see what can fail, take one
+state, one action that returns to that state, and one draw. Set
+\(\nu=\pi=1,\ \mathcal H=\R,\ \Phi=0,\ \alpha=1/2,\ \Gamma=2\).
+With cost \(g_{x,a}=0\) and \(\kappa=1\), the feasible points
+\((\mathbf z,b,s_x)=(0,2t,t)\), \(t\ge0\), have primal value \(t\).
+The dual requires mass \(2\) in a row of capacity \(1\).
+
+\lead{2. The value of the quadratic objective.}
+The original quadratic program minimizes
+\(F(\lambda)=\tfrac12\lambda^\top Q\lambda+R^\top\lambda+S\) on
+\(\Lambda\). In terms of the feature differences, its coefficients are
+\[
+ Q(x,a,y,a')=\ip{d_{x,a}}{d_{y,a'}},\quad
+ R(x,a)=\Gamma g_{x,a}-\ip{m}{d_{x,a}},\quad S=-N^2\norm{m}^2 .
+\]
+Expanding the square in \(G\) gives
+\[
+     G(\lambda)=\frac{F(\lambda)-S+\tfrac12\norm{m}^2}{\Gamma}.
+\]
+Since \(\Gamma>0\), the objectives have exactly the same minimizers, and
+the original weight formula applies to every one of them. Their numerical
+values can differ. In the one-state example above, change the cost to
+\(g_{x,a}=1\) and the penalty to \(\kappa=4\). The only feasible multiplier is
+\(2\), with \(F(2)=4\) and \(G(2)=2\). The feasible point \((0,2,0)\)
+attains the primal value \(2\). In the two-state example, \(S=-1\), and the
+same conversion takes \(F(2)=3\) to \(G(2)=9/4\).
+
+\smallskip
+{\small
+\textbf{Source.} N.~Bhat, V.~F.~Farias, C.~C.~Moallemi and A.~T.~Zheng,
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=8}{\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
+August 29, 2022, Proposition~1.\par
+\textbf{Formal proof.} \href{https://github.com/nikhilpb/kadp/blob/main/lean/PrimalAttainment.lean}{Lean theorem \texttt{strongDuality}}.
+}
+\end{document}

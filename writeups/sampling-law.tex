@@ -1,0 +1,236 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[top=21mm,bottom=23mm,left=26mm,right=26mm]{geometry}
+\usepackage{amsmath,amssymb,xcolor}
+\definecolor{link}{HTML}{205973}
+\usepackage[hypertexnames=false,colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
+\hypersetup{pdftitle={Appendix B.3. Sampling from an approximate occupancy law}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\raggedbottom
+\newcommand{\R}{\mathbb R}
+\newcommand{\Prob}{\mathbb P}
+\newcommand{\E}{\mathbb E}
+\newcommand{\cF}{\mathcal F}
+\newcommand{\TV}{d_{\rm TV}}
+\newcommand{\ep}{\epsilon}
+\newcommand{\al}{\alpha}
+\newcommand{\app}{\pi_{\rm approx}}
+\newcommand{\pistar}{\pi_{\mu^*,\nu}}
+\newcommand{\lead}[1]{\par\smallskip\noindent\textbf{#1}\enspace}
+\begin{document}
+{\LARGE\bfseries Appendix B.3. Sampling from an\\[2pt] approximate occupancy law\par}
+\medskip
+When program (18) draws states from an approximation to the optimal policy's
+occupancy, its fitted value function still admits a finite-sample guarantee.
+The error can be bounded using either the population total variation or a
+population likelihood ratio and the observed optimal slacks. The purely
+empirical likelihood-ratio inequality on p.~33 can fail with probability at
+least one half, regardless of the coupling.
+
+\section*{Which distribution enters the fit?}
+Consider a finite discounted cost-minimizing MDP with discount
+$0<\al<1$, costs $g_{x,a}$ and transition probabilities $p(x,y,a)$. Let
+$T_\mu J=g_\mu+\al P_\mu J$ be the policy Bellman operator and
+$TJ=\min_\mu T_\mu J$ its componentwise minimum. An optimal policy
+$\mu^*$ has value $J^*=TJ^*=T_{\mu^*}J^*$. Given an initial distribution
+$\nu$, abbreviate the ideal and actual sampling distributions by
+\[
+ \pi=\pistar=(1-\al)\sum_{j\ge0}\al^j(P_{\mu^*}^{\top})^j\nu,
+ \qquad \rho=\app .
+\]
+Write $q^\top f=\sum_x q_x f(x)$ and
+$\|f\|_{1,\nu}=\sum_x\nu_x|f(x)|$. The candidate class $\cF$ consists of
+$J(x)=\langle\Phi(x),\mathbf z\rangle+b$, with $\Phi$ taking values in a
+real Hilbert space, $\|\mathbf z\|\le C$ and $|b|\le B$.
+Put $r_J=(J-T_{\mu^*}J)_+$ and $s_J=(J-TJ)_+$, so $0\le r_J\le s_J$.
+
+Draw $X_1,\ldots,X_N$ independently from $\rho$ and write
+$\widehat\rho^\top f=N^{-1}\sum_i f(X_i)$. Program (18) fits $\widehat J$
+by maximizing over $J\in\cF$ and $N$ slacks
+\[
+ \nu^\top J-cN^{-1}\sum_i s_i,\qquad
+ s_i\ge s_J(X_i),\qquad c=\frac{2}{1-\al}.
+\]
+There is an optimizer on every sample. Since $c>0$, every optimal slack
+is minimal at its draw. To evaluate the slack away from the draws, use the
+canonical statewise extension $s_{\widehat J}$. Denote the observed mean
+slack by $\overline s=N^{-1}\sum_i\widehat s_i$.
+
+\lead{The TV coefficient.}
+With $\TV(p,q)=\frac12\sum_x|p_x-q_x|$, any $0\le f\le L$ satisfies
+\begin{equation}
+ (p-q)^\top f=(p-q)^\top(f-L/2)\le L\TV(p,q).
+ \label{eq:tv}
+\end{equation}
+Opposite point masses and their separating indicator attain equality.
+Applied to empirical laws, the coefficient in B.3 is therefore
+$2/(1-\al)$ for standard TV, or $1/(1-\al)$ for the full $\ell^1$ distance.
+
+\newpage
+\section*{A guarantee for every fitted optimizer}
+Let $K=\max_x\|\Phi(x)\|$, $D=4CK(1+\al)+4B(1-\al)+2\|g\|_\infty$,
+and $L=D/2$. For every $J\in\cF$, $0\le r_J,s_J\le L$.
+Indeed $J-T_\mu J$ has feature term bounded by $CK(1+\al)$, offset
+term bounded by $B(1-\al)$, and cost term bounded by $\|g\|_\infty$.
+A greedy action realizes $TJ$ in each state. The stated $L$ covers all
+these terms. Choose $\ep>0$, $0<\delta<1$ and a positive integer $N$ with
+\[
+ N\ge D^2\bigl(1+\sqrt{2\log(1/\delta)}\bigr)^2/\ep^2 .
+\]
+Define $d=\TV(\pi,\rho)$. The following bounds refer to the product law
+$\rho^{\otimes N}$ of the states actually used in the fit.
+
+\lead{Uniform approximation.}
+With probability at least $1-\delta$, every optimizer satisfies
+\begin{equation}
+ \|J^*-\widehat J\|_{1,\nu}\le
+ \frac{3+\al}{1-\al}\min_{V\in\cF}\|J^*-V\|_\infty
+       +c(\ep+Ld).
+ \label{eq:best}
+\end{equation}
+In particular the change in this guarantee tends to zero with the
+population distance $d$, with $C,B,K$ and the MDP fixed.
+
+\lead{Population comparison.}
+Fix a comparator $V\in\cF$ before drawing the states and write
+$A_\rho(V)=\nu^\top(J^*-V)+c\rho^\top s_V$. With probability at least
+$1-\delta-\delta^4$, every optimizer satisfies
+\begin{equation}
+ \|J^*-\widehat J\|_{1,\nu}\le A_\rho(V)+c(2\ep+Ld).
+ \label{eq:fixed}
+\end{equation}
+If $\pi_x\le(1+k)\rho_x$ for all $x$ and $k\ge0$, the same event gives
+\begin{equation}
+ \|J^*-\widehat J\|_{1,\nu}\le
+ A_\rho(V)+c\bigl((2+k)\ep+k\overline s\bigr).
+ \label{eq:ratio}
+\end{equation}
+The observable correction $k\overline s$ comes with an additional
+$k\ep$ from transporting the fitted function's concentration error.
+The domination hypothesis applies without dividing by a zero probability.
+
+\lead{The deterministic comparison.}
+For any fit $J$, let $u=J-J^*$. The policy fixed-point equation yields
+$u\le r_J+\al P_{\mu^*}u$, hence
+$u_+\le r_J+\al P_{\mu^*}u_+$. Summing the discounted iterates gives
+$\nu^\top u_+\le\pi^\top r_J/(1-\al)$. Using
+$\|J^*-J\|_{1,\nu}=\nu^\top(J^*-J)+2\nu^\top u_+$ and empirical
+optimality with the feasible comparator slacks $s_V(X_i)$, we obtain
+\begin{equation}
+ \|J^*-\widehat J\|_{1,\nu}\le
+ \nu^\top(J^*-V)+c\bigl(\widehat\rho^\top s_V+\eta\bigr)
+ \quad\text{if }\pi^\top r_{\widehat J}\le\widehat\rho^\top r_{\widehat J}+\eta .
+ \label{eq:path}
+\end{equation}
+Indeed, optimality bounds $-\nu^\top\widehat J+c\widehat\rho^\top
+s_{\widehat J}$ by the same expression at $V$, and $r_{\widehat J}\le
+s_{\widehat J}$. This step applies to the optimizer of the displayed sampled program.
+
+\newpage
+\section*{Proof under the actual product law}
+Theorem~3, applied to the fixed policy $\mu^*$ under $\rho$, gives a single
+event of probability at least $1-\delta$ on which
+\begin{equation}
+ \rho^\top r_J\le\widehat\rho^\top r_J+\ep
+ \qquad\text{for every }J\in\cF .
+ \label{eq:uniform}
+\end{equation}
+The uniform quantifier allows substitution of the observed fit
+$\widehat J$. Applying \eqref{eq:tv} before \eqref{eq:uniform} gives
+$\eta=\ep+Ld$ in \eqref{eq:path}. Under the ratio assumption,
+nonnegativity of $r_{\widehat J}$ gives the alternative estimate
+\begin{align*}
+ \pi^\top r_{\widehat J}
+ &\le(1+k)\rho^\top r_{\widehat J}
+ \le(1+k)(\widehat\rho^\top r_{\widehat J}+\ep)\\
+ &\le\widehat\rho^\top r_{\widehat J}
+         +k\overline s+(1+k)\ep .
+\end{align*}
+Thus we may also take $\eta=k\overline s+(1+k)\ep$.
+
+For \eqref{eq:best}, put $e=\|J^*-V\|_\infty$. The $\al$-contraction of
+$T$ gives $s_V(x)\le(1+\al)e$ pointwise, and
+$\nu^\top(J^*-V)\le e$. Substitution of these bounds into \eqref{eq:path}
+gives coefficient $1+c(1+\al)=(3+\al)/(1-\al)$ for $e$.
+This holds for all $V$ on the same event. The value vectors in $\cF$ form
+a compact set. Projecting the coefficient vector onto the span of the
+finitely many $\Phi(x)$ preserves every evaluation, and the radius
+constraints in this span and on the offset are compact. The minimum
+in \eqref{eq:best} is attained.
+
+For \eqref{eq:fixed} and \eqref{eq:ratio}, use $0\le s_V\le D/2$ for the
+one comparator $V$ fixed in advance. Changing one draw changes
+$\widehat\rho^\top s_V$ by at most $D/(2N)$. If $D>0$, the
+bounded-differences inequality in particular gives
+\[
+ \Prob\!\left(\widehat\rho^\top s_V-\rho^\top s_V\ge\ep\right)
+ \le \exp(-2N\ep^2/D^2)\le\delta^4 .
+\]
+The last inequality uses
+$N\ep^2\ge D^2(1+\sqrt{2\log(1/\delta)})^2
+\ge 2D^2\log(1/\delta)$. If $D=0$, the residual vanishes identically.
+Intersecting the comparator event with \eqref{eq:uniform} costs at most
+$\delta+\delta^4$ in failure probability. Inserting each choice of
+$\eta$ into \eqref{eq:path} proves the two bounds. A comparator that
+minimizes $A_\rho$ can be chosen before drawing the sample because the
+admissible value vectors are compact and $A_\rho$ is continuous.
+
+\lead{What closeness of the laws controls.}
+Empirical TV also depends on how the samples are paired. Two independent
+single draws from the same fair two-state law have empirical TV one with
+probability $1/2$. For fixed $N$, one can instead pair each coordinate by
+putting $\min(\pi_x,\rho_x)$ on the diagonal at state $x$. Pair the
+residual masses by their normalized product when their common total
+$d>0$. This gives mismatch probability $d$ per draw. Independent copies
+give identical samples with probability $(1-d)^N$. The population-TV term
+in \eqref{eq:best}--\eqref{eq:fixed} requires only the actual sample.
+
+\newpage
+\section*{Why the empirical ratio can fail}
+Use states $0,1$, one available action, absorbing transitions and
+$\al=1/2$. Take $g_1=-1$, $g_0=1$, $\Phi=0$, and strictly positive radii
+$C=B=1$. Every admissible fit is the constant $J=b$, $|b|\le1$.
+Its canonical statewise slack is
+\[
+ s_J(1)=(1+b/2)_+=1+b/2,\qquad
+ s_J(0)=(-1+b/2)_+=0 .
+\]
+Consequently $s_J=a\mathbf 1_{\{1\}}$ with $a\ge1/2$, including for
+every data-dependent optimizer. The factor $a$ cancels from the claimed
+empirical inequality. All discounted occupancies in this model equal their
+initial distributions, so we may realize any desired ideal law.
+
+Choose $\pi_1=1-t$, $\pi_0=t$, with $0\le t\le1$, and $\rho_1=\rho_0=1/2$.
+Then $\pi_x\le 2\rho_x$ for both states, so the appendix's ratio
+parameter can be taken to be $k=1$. Choose an odd $N$, and let
+$Y\sim\pi^{\otimes N}$, $X\sim\rho^{\otimes N}$ on any common
+probability space. Write $A$ for the event that every ideal draw is $1$,
+and $B$ for the event that fewer than half of the approximate draws are
+$1$. The first marginal gives $\Prob(A)=(1-t)^N$. Complementing every
+bit in a fair sample exchanges $B$ and $B^c$ because $N$ is odd, giving
+$\Prob(B)=1/2$. Every coupling therefore satisfies
+\[
+ \Prob(A\cap B)\ \ge\ (1-t)^N-\tfrac12
+ \ \ge\ \tfrac12-Nt .
+\]
+On $A\cap B$ the ideal mean of $s_{\widehat J}$ equals $a$, and its
+approximate mean is less than $a/2$. Thus
+\[
+ (\widehat\pi-\widehat\rho)^\top s_{\widehat J}
+       > k\widehat\rho^\top s_{\widehat J}.
+\]
+For $t=0$, failure is exactly $B$, of probability $1/2$ at every odd
+sample size, with the same two population laws throughout. If both
+distributions must be strictly positive, set $t=1/(4N)$. Failure
+probability is then at least $1/4$ at every odd $N$. In this latter
+family the ideal distribution varies with $N$. Neither obstruction
+depends on choosing an unfavorable coupling or an unfavorable optimizer.
+
+{\small\raggedright
+\lead{Sources.} Bhat, Farias, Moallemi and Zheng,
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=32}{Appendix~B.3, pp.~32--33}.
+Formal proofs cover
+\href{https://github.com/nikhilpb/kadp/blob/main/lean/SamplingLaw.lean}{the transport bounds and empirical ratio counterexample},
+\href{https://github.com/nikhilpb/kadp/blob/main/lean/WeightedSampling.lean}{the joint infimum over fits and weights}, and
+\href{https://github.com/nikhilpb/kadp/blob/main/lean/SamplingCoupling.lean}{the empirical coupling and equal-law example}.\par}
+\end{document}

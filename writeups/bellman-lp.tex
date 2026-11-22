@@ -1,0 +1,62 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[top=21mm,bottom=23mm,left=26mm,right=26mm]{geometry}
+\usepackage{amsmath,amssymb,xcolor}
+\definecolor{link}{HTML}{205973}
+\usepackage[colorlinks=true,urlcolor=link]{hyperref}
+\hypersetup{pdftitle={Cost minimization and the Bellman linear program}}
+\setlength{\parindent}{0pt}\setlength{\parskip}{5pt}
+\newcommand{\lead}[1]{\par\smallskip\textbf{#1}\enspace}
+\begin{document}
+{\LARGE\bfseries Cost minimization and the Bellman linear program\par}
+\medskip
+Let \(\mathcal S,\mathcal A\) be finite nonempty sets of states and actions.
+An action \(a\) in state \(x\) incurs cost \(g_{x,a}\) and moves to \(y\) with
+probability \(p(x,y,a)\). Each transition row has nonnegative entries summing
+to one. Write \(P_aJ(x)=\sum_y p(x,y,a)J(y)\). The discount is \(0<\alpha<1\).
+For a stationary policy \(\mu:\mathcal S\to\mathcal A\), the expected discounted
+cost starting at \(x\) is \(J_\mu(x)=\mathbb E_{x,\mu}\sum_{t\ge0}\alpha^t
+g_{X_t,\mu(X_t)}\). Put \(g_\mu(x)=g_{x,\mu(x)}\), \(P_\mu(x,y)=p(x,y,\mu(x))\), and set
+\[
+ (T_\mu J)(x)=g_\mu(x)+\alpha(P_\mu J)(x),\qquad
+ (TJ)(x)=\min_{a\in\mathcal A}\{g_{x,a}+\alpha P_aJ(x)\}.
+\]
+Both operators preserve pointwise order. Stochastic averaging and taking a
+finite minimum each preserve a uniform bound on differences, so both are
+contractions in the sup norm with factor \(\alpha\).
+
+\lead{Bellman LP and greedy policies.}
+The optimal cost \(J^*(x)=\min_\mu J_\mu(x)\) is attained by one policy
+simultaneously at all states. A policy attains it exactly when each of its
+actions attains the minimum defining \(TJ^*\). For every vector of strictly
+positive state weights \(\nu\), \(J^*\) is the unique solution of
+\[
+ \max_J\ \sum_x\nu_xJ(x)
+ \qquad\text{subject to}\qquad
+ J(x)\le g_{x,a}+\alpha P_aJ(x)\quad\text{for all }x,a. \tag{1}
+\]
+
+\lead{Proof.}
+Let \(U\) be the unique fixed point of \(T\). Choose a minimizing action at
+each state to obtain \(\mu\) with \(T_\mu U=U\). Conditioning on the first
+transition gives \(J_\mu=T_\mu J_\mu\), and uniqueness gives \(U=J_\mu\).
+For every policy \(\sigma\), \(U=TU\le T_\sigma U\). Iteration and contraction
+give \(U\le J_\sigma\), proving \(U=J^*\). Conversely, \(J_\sigma=J^*\)
+implies \(T_\sigma J^*=TJ^*\), so every action selected by \(\sigma\) is greedy.
+
+The constraints of (1) say \(J\le TJ\). Iteration gives \(J\le T^nJ\to J^*\)
+componentwise. Since \(J^*=TJ^*\) is feasible, it maximizes the objective.
+Any strict inequality \(J(x)<J^*(x)\) strictly lowers that objective because
+\(\nu_x>0\). This proves uniqueness.
+
+\lead{Why the two optimization signs differ.}
+The policy minimizes cost; the LP maximizes a lower bound on that cost.
+For one state, two self-looping actions with costs \(0,1\) and
+\(\alpha=1/2\), the two policies cost \(0\) and \(2\). The LP constraints
+are \(J\le J/2\) and \(J\le 1+J/2\); its maximum is \(0\).
+The policy maximization printed in \S2.1 would select the action costing \(2\).
+\smallskip
+
+{\small\textbf{Sources.} Bhat, Farias, Moallemi and Zheng,
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=5}{\S2.1 and equation (1)}.
+\href{https://github.com/nikhilpb/kadp/blob/main/lean/BellmanLP.lean}{Lean proof and one-state example}.}
+\end{document}

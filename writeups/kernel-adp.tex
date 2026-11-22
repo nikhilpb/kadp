@@ -1,0 +1,974 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[top=23mm,bottom=24mm,left=27mm,right=27mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,booktabs,array,xcolor,fancyhdr}
+\definecolor{ink}{HTML}{194D61}
+\usepackage[hypertexnames=false,colorlinks=true,linkcolor=ink,urlcolor=ink,bookmarksnumbered=true]{hyperref}
+\hypersetup{pdftitle={Kernel approximate dynamic programming: results and proofs},pdfauthor={Kernel ADP formalization project}}
+\setlength{\parindent}{0pt}\setlength{\parskip}{5pt plus 1pt}
+\setcounter{tocdepth}{1}
+\raggedbottom
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\textcolor{ink}{Kernel approximate dynamic programming}}
+\fancyhead[R]{\small\textcolor{ink}{\nouppercase{\leftmark}}}
+\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+\newcommand{\partsection}[2]{\clearpage\section[#1]{#2}}
+\newcommand{\lead}[1]{\par\smallskip\textbf{#1}\enspace}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\newcommand{\J}{\mathcal J_{C,B}}\newcommand{\Cbar}{\overline C}
+\newcommand{\occ}{\pi_{\mu^*,\nu}}
+\newcommand{\leanfile}[2]{\href{https://github.com/nikhilpb/kadp/blob/main/lean/#1.lean}{#2}}
+\begin{document}
+\thispagestyle{plain}
+{\huge\bfseries Kernel approximate\\dynamic programming\par}
+\medskip
+{\Large Results and proofs for discounted cost minimization\par}
+\bigskip
+A kernel represents a value function through inner products of state
+features. This lets us fit the function by solving a finite quadratic
+program, even when the features live in an infinite-dimensional space.
+There are two mathematical questions. Which value function does the
+quadratic program recover? How well can a value function fitted on a
+sample approximate the optimal cost?
+
+The first question has an exact answer for each realized sample.
+Proposition~1 recovers the fitted weight from any optimal multiplier,
+and Proposition~2 characterizes optimality by transfers between pairs
+of multipliers. The second question concerns an idealized sampled
+program with bounded weights and intercept and a prescribed state law.
+Theorems~1 and~2 bound its error by the best error available within
+that class, plus a sampling term. Theorem~3 supplies the uniform
+probability estimate that makes this possible.
+
+\tableofcontents
+\medskip
+The numbering of propositions, theorems, lemmas and parenthesized
+manuscript equations follows Bhat, Farias, Moallemi and Zheng,
+\emph{Non-parametric Approximate Dynamic Programming via the Kernel
+Method}, August 29, 2022. The final section locates the corrections
+and identifies which guarantees they affect.
+
+\partsection{Bellman LP}{The Bellman linear program}
+\label{sec:bellman}
+Let \(\mathcal S,\mathcal A\) be finite nonempty sets of states and actions.
+An action \(a\) in state \(x\) incurs cost \(g_{x,a}\) and moves to \(y\) with
+probability \(p(x,y,a)\). Each transition row has nonnegative entries summing
+to one. Write \(P_aJ(x)=\sum_y p(x,y,a)J(y)\). The discount is \(0<\alpha<1\).
+For a stationary policy \(\mu:\mathcal S\to\mathcal A\), the expected discounted
+cost starting at \(x\) is \(J_\mu(x)=\mathbb E_{x,\mu}\sum_{t\ge0}\alpha^t
+g_{X_t,\mu(X_t)}\). Put \(g_\mu(x)=g_{x,\mu(x)}\), \(P_\mu(x,y)=p(x,y,\mu(x))\), and set
+\[
+ (T_\mu J)(x)=g_\mu(x)+\alpha(P_\mu J)(x),\qquad
+ (TJ)(x)=\min_{a\in\mathcal A}\{g_{x,a}+\alpha P_aJ(x)\}.
+\]
+Both operators preserve pointwise order. Stochastic averaging and taking a
+finite minimum each preserve a uniform bound on differences, so both are
+contractions in the sup norm with factor \(\alpha\).
+
+\lead{Bellman LP and greedy policies.}
+The optimal cost \(J^*(x)=\min_\mu J_\mu(x)\) is attained by one policy
+simultaneously at all states. A policy attains it exactly when each of its
+actions attains the minimum defining \(TJ^*\). For every vector of strictly
+positive state weights \(\nu\), \(J^*\) is the unique solution of
+\[
+ \max_J\ \sum_x\nu_xJ(x)
+ \qquad\text{subject to}\qquad
+ J(x)\le g_{x,a}+\alpha P_aJ(x)\quad\text{for all }x,a. \tag{1}
+\]
+
+\lead{Proof.}
+Contraction gives a unique fixed point \(U\) of \(T\). Choose a minimizing action at
+each state to obtain \(\mu\) with \(T_\mu U=U\). Conditioning on the first
+transition gives \(J_\mu=T_\mu J_\mu\), and uniqueness gives \(U=J_\mu\).
+For every policy \(\sigma\), \(U=TU\le T_\sigma U\). Iteration and contraction
+give \(U\le J_\sigma\), proving \(U=J^*\). Conversely, \(J_\sigma=J^*\)
+implies \(T_\sigma J^*=TJ^*\), so every action selected by \(\sigma\) is greedy.
+
+The constraints of (1) say \(J\le TJ\). Iteration gives \(J\le T^nJ\to J^*\)
+componentwise. Since \(J^*=TJ^*\) is feasible, it maximizes the objective.
+Any strict inequality \(J(x)<J^*(x)\) strictly lowers that objective because
+\(\nu_x>0\). This proves uniqueness.
+
+\lead{Why the two optimization signs differ.}
+The policy minimizes cost. The LP maximizes a lower bound on that cost.
+For one state, two self-looping actions with costs \(0,1\) and
+\(\alpha=1/2\), the two policies cost \(0\) and \(2\). The LP constraints
+are \(J\le J/2\) and \(J\le 1+J/2\), so its maximum is \(0\).
+The policy maximization printed in \S2.1 would select the action costing \(2\).
+
+\partsection{Sampled duality}{The sampled primal and its dual}
+\label{sec:dual}
+A feature map \(\Phi:\mathcal S\to\mathcal H\) takes values in a real Hilbert
+space. Its inner product and norm are \(\langle\cdot,\cdot\rangle\) and
+\(\|\cdot\|\). Fit \(J_{\mathbf z,b}(x)=\langle\Phi(x),\mathbf z\rangle+b\).
+Let \(X_1,\ldots,X_N\) be \(N\ge1\) draws from a distribution \(\pi\) positive
+on every state, and let \(w_i=\nu_{X_i}/\pi_{X_i}\) for positive relevance
+weights \(\nu\). Fix the sample and give each repeat its own constraint row.
+Write \(g_{ia}=g_{X_i,a}\) and define
+\[
+ m=N^{-1}\sum_i w_i\Phi(X_i),\qquad d_{ia}=\Phi(X_i)-\alpha P_a\Phi(X_i),
+ \qquad v(\lambda)=\sum_{i,a}\lambda_{ia}d_{ia}.
+\]
+Here \(P_a\Phi(x)=\sum_y p(x,y,a)\Phi(y)\). For \(\Gamma,\kappa>0\) the
+sampled primal program is
+\[
+ \begin{aligned}
+ \max_{\mathbf z,b,s}\quad&P(\mathbf z,b,s)=\langle m,\mathbf z\rangle+b-
+       \tfrac{\kappa}{N}\sum_i s_i-\tfrac{\Gamma}{2}\|\mathbf z\|^2\\
+ \text{subject to}\quad&s_i\ge0,\qquad
+    \langle d_{ia},\mathbf z\rangle+(1-\alpha)b\le g_{ia}+s_i
+       \quad(\text{all }i,a).
+ \end{aligned}\tag{6}
+\]
+The intercept has coefficient one. A slack \(s_i\) covers the largest
+Bellman constraint violation among actions at draw \(i\).
+Define the feasible multiplier set and the normalized dual objective by
+\[
+ \begin{aligned}
+ \Lambda&=\{\lambda\ge0:\ \sum_a\lambda_{ia}\le\kappa/N,\
+               \sum_{i,a}\lambda_{ia}=1/(1-\alpha)\},\\
+ G(\lambda)&=\sum_{i,a}g_{ia}\lambda_{ia}+
+               \tfrac1{2\Gamma}\|m-v(\lambda)\|^2 .
+ \end{aligned}
+\]
+
+\lead{Proposition 1 (strong duality and recovery).}
+If \(\kappa\ge1/(1-\alpha)\), the maximum of (6) and the minimum of \(G\)
+over \(\Lambda\) are attained and equal. Every minimizing multiplier
+\(\lambda^*\) recovers the weight of every primal maximizer by the formula
+\[
+          \mathbf z^*=(m-v(\lambda^*))/\Gamma .\tag{10}
+\]
+The intercept and slacks may have several optimal choices. If
+\(\kappa<1/(1-\alpha)\), the dual is infeasible and the primal is unbounded
+above. Indeed, all rows together can hold only \(\kappa\) units of mass.
+In the primal take \(\mathbf z=0,\ b=t\) and
+\(s_i=\max(0,(1-\alpha)t-\min_a g_{ia})\). For all sufficiently large
+\(t\) the objective has positive slope \(1-\kappa(1-\alpha)\).
+
+\newpage\subsection*{The duality gap and a primal optimizer}
+When total capacity suffices, dividing the required mass equally among rows
+and placing each share on one action proves feasibility. The closed,
+bounded set \(\Lambda\) is compact, so \(G\) attains a minimum. For any
+\(\lambda\in\Lambda\) write \(\mathbf z_\lambda=(m-v(\lambda))/\Gamma\).
+With \(\rho_{ia}=g_{ia}+s_i-\langle d_{ia},\mathbf z\rangle-(1-\alpha)b\),
+expanding the square gives
+\[
+ G(\lambda)-P(\mathbf z,b,s)=
+ \tfrac{\Gamma}{2}\|\mathbf z-\mathbf z_\lambda\|^2
+ +\sum_{i,a}\lambda_{ia}\rho_{ia}
+ +\sum_i(\kappa/N-\sum_a\lambda_{ia})s_i .
+\]
+All three terms are nonnegative at feasible points. It remains to find a
+primal point at which all vanish. Fix a minimizer \(\lambda^*\) and set
+\(c_{ia}=g_{ia}-\langle d_{ia},\mathbf z_{\lambda^*}\rangle\).
+Differentiating \(G\) from \(\lambda^*\) along each segment in \(\Lambda\)
+shows that \(\lambda^*\) minimizes the linear cost \(\sum c_{ia}\lambda_{ia}\).
+
+Put \(r_i=\min_a c_{ia}\). To minimize the linear cost, use a cheapest
+action in each occupied row. Sort rows by \(r_i\), and let \(u\) be the
+cost of the first row at which cumulative capacity reaches \(1/(1-\alpha)\).
+Fill all rows cheaper than \(u\), distribute the remaining mass across rows
+tied at \(u\), and leave dearer rows empty. This allocation attains the
+lower bound
+\[
+ \sum_{i,a}c_{ia}\lambda_{ia}\ \ge\
+       \frac{u}{1-\alpha}-\frac{\kappa}{N}\sum_i(u-r_i)_+ ,
+ \qquad (t)_+=\max(t,0).
+\]
+The bound follows by subtracting \(u\) from each row price and applying the
+cap to each negative coefficient. Thus \(\lambda^*\) also attains it.
+Set \(b=u/(1-\alpha)\) and \(s_i=(u-r_i)_+\). These choices are feasible
+and the two sums in the gap total zero. This proves attainment, and the
+squared norm in the gap proves uniqueness of the weight.
+
+\lead{Converting the printed objective.}
+In (9) the quadratic is \(F(\lambda)=\frac12\lambda^\top Q\lambda+
+R^\top\lambda+S\), where
+\(Q_{ia,jc}=\langle d_{ia},d_{jc}\rangle\),
+\(R_{ia}=\Gamma g_{ia}-\langle m,d_{ia}\rangle\), and \(S=-N^2\|m\|^2\).
+Direct expansion gives
+\[
+ G(\lambda)=\bigl(F(\lambda)-S+\tfrac12\|m\|^2\bigr)/\Gamma .
+\]
+Both minimizations give the same multipliers. For one self-looping state
+and action, \(\Phi=0,\ \nu=\pi=1,\ g=1,\ \alpha=1/2,\ \kappa=4,\ \Gamma=2\),
+the sole feasible multiplier is \(2\). The printed minimum is \(4\), while the
+primal maximum and normalized minimum are both \(2\). With \(g=0,\kappa=1\)
+the same model realizes the unbounded case.
+
+At the threshold, take two states \(x,y\), one draw at \(x\), and one action
+moving to \(y\). The respective costs are \(1,0\), the scalar features \(1,0\),
+both laws are uniform, and \(\alpha=1/2,\ \Gamma=\kappa=2\).
+The only multiplier is \(2\), giving \(\mathbf z^*=-1/2\) and \(G=9/4\).
+The pair \(b=3,\ s_1=0\) attains this value, as does every
+\(b=3+t,\ s_1=t/2\) for \(t\ge0\).
+
+\partsection{Kernel evaluation}{Kernel evaluation and greedy actions}
+\label{sec:kernel}
+Let \(K(x,y)=\langle\Phi(x),\Phi(y)\rangle\). The dual and the policy can
+be evaluated with kernel values alone. In the following sums \(x\) may be
+any state, including one absent from the sample. For a state and action put
+\[
+ \mathcal N_{x,a}=\{x\}\cup\{y:p(x,y,a)>0\},\qquad
+ q_{x,y,a}=\mathbf1_{\{x=y\}}-\alpha p(x,y,a).
+\]
+Since \(q_{x,y,a}=0\) outside the neighborhood, the vector \(d_{ia}\) equals
+\(\sum_yq_{X_i,y,a}\Phi(y)\). Substitution gives the kernel coefficients
+\[
+ \begin{aligned}
+ Q_{ia,jc}&=\sum_{y,u}q_{X_i,y,a}q_{X_j,u,c}K(y,u),\\
+ R_{ia}&=\Gamma g_{ia}-N^{-1}\sum_j w_j\sum_y q_{X_i,y,a}K(X_j,y).
+ \end{aligned}\tag{12--13}
+\]
+The matrix is positive semidefinite because \(\lambda^\top Q\lambda=
+\|v(\lambda)\|^2\). The constant \(S\) can be dropped when finding a
+minimizer. At such a minimizer \(\lambda^*\), taking the inner product of
+(10) with \(\Phi(x)\) gives the prediction
+\[
+ \widehat J(x)=\Gamma^{-1}\left[
+     N^{-1}\sum_j w_jK(x,X_j)-
+     \sum_{i,a}\lambda^*_{ia}\left(K(x,X_i)-\alpha\sum_y p(X_i,y,a)K(x,y)\right)
+       \right]. \tag{14}
+\]
+Every optimal primal fit is \(\widehat J+b^*\). Adding \(b^*\) to a value
+function adds \(\alpha b^*\) to every action score at a given state.
+Hence the two functions have identical sets of greedy actions, ties included.
+
+\lead{Why the current state belongs in the neighborhood.}
+Take states \(s,t\) with features \(1,2\). Action \(A\) always moves to
+\(s\), action \(B\) always moves to \(t\). Let \(g_{s,A}=5/4,\ g_{s,B}=1\). At \(t\) both actions cost zero. Use one draw at \(s\), uniform \(\pi\),
+\(\nu=(3/4,1/4)\), \(\alpha=1/2,\ \kappa=2,\ \Gamma=1\). The two feature
+differences are \(1/2\) and \(0\), and \(m=3/2\). For action \(B\),
+omitting the current state replaces \(d_{sB}=1-(1/2)2=0\) by \(-1\).
+The diagonal entry of \(Q\) changes from \(0\) to \(1\) and \(R_{sB}\)
+from \(1\) to \(5/2\). The formula in (12--13) uses the neighborhood of
+\S2.3. The description in \S2.5 omits the current state in this example.
+
+Using the full neighborhood gives \(Q=\mathrm{diag}(1/4,0)\) and
+\(R=(1/2,1)\). The minimizer is \((2,0)\), so the recovered weight is
+\(1/2\) and \(\widehat J=(1/2,1)\). With optimal intercept \(b^*=2\), the
+fitted values are \((5/2,3)\). Action costs computed from either prediction
+tie at \(s\) and strictly favor \(A\) at \(t\).
+
+
+\partsection{Regularization}{What changes when a penalty becomes a radius?}
+\label{sec:regular}
+Consider the population version of the fit. In this section each row is an
+actual state, \(\pi\) is a probability distribution, and
+\(d_{xa}=\Phi(x)-\alpha P_a\Phi(x)\). The common feasible set is
+\[
+  s_x\ge0,\qquad \langle d_{xa},\mathbf z\rangle+(1-\alpha)b\le g_{x,a}+s_x
+  \quad\text{for every state and action}.
+\]
+Writing \(m=\sum_x\nu_x\Phi(x)\), let
+\(L(\mathbf z,b,s)=\langle m,\mathbf z\rangle+b-\kappa\sum_x\pi_xs_x\).
+The two population programs are
+\[
+\begin{aligned}
+ (5)&\quad \max\ L(\mathbf z,b,s)-\tfrac{\Gamma}{2}\|\mathbf z\|^2,\\
+ (15)&\quad \max\ L(\mathbf z,b,s)
+                  \quad\text{with }\|\mathbf z\|\le C,\ |b|\le B .
+\end{aligned}
+\]
+This distinction matters when comparing objective values. It also matters
+at the exact penalty threshold, where an intercept can vary without changing
+the penalized objective.
+
+\lead{Penalty and radius.}
+For \(\Gamma>0\), (5) attains a finite maximum exactly when
+\(\kappa(1-\alpha)\ge1\). All its optimizers have one weight \(\mathbf z^*\).
+Choose \(C=\|\mathbf z^*\|\), and choose \(B\) large enough to contain the
+intercept of one optimizer. The optimizers of (15) are then precisely the
+optimizers of (5) whose intercepts satisfy the box constraint, and
+\[
+             \max(15)=\max(5)+\tfrac{\Gamma}{2}\|\mathbf z^*\|^2 .
+\]
+For \(\kappa(1-\alpha)>1\), some finite box contains \emph{all} the
+optimizers of (5). At equality every finite box omits some of them.
+
+\lead{Existence and the intercept.}
+For fixed weight, the least slack is
+\((1-\alpha)(b-u_x)_+\), where
+\[
+ u_x=\min_a\{g_{x,a}-\langle d_{xa},\mathbf z\rangle\}/(1-\alpha).
+\]
+The reduced objective as a function of \(b\) has slope one below every
+\(u_x\) and slope \(1-\kappa(1-\alpha)\) above every \(u_x\).
+Below the penalty threshold the upper tail is unbounded. At or above it,
+clipping \(b\) to the interval between the extreme breakpoints preserves
+or improves the value. All breakpoints lie in \([-U,U]\), where
+\[
+ U=\frac{\|g\|_\infty+\max_{x,a}\|d_{xa}\|\,\|\mathbf z\|}{1-\alpha}.
+\]
+Thus the reduced penalized objective is bounded above by
+\(\|m\|\,\|\mathbf z\|+U-\Gamma\|\mathbf z\|^2/2\), which tends to
+\(-\infty\) with the norm. Projecting \(\mathbf z\) onto the span of \(m\)
+and all \(d_{xa}\) preserves the linear terms and can only reduce the
+penalty. A compact weight ball in this finite span and a compact intercept
+interval therefore suffice. The reduced objective is continuous there.
+
+\newpage\subsection*{The optimizer set and the value shift}
+The feasible set is convex. If two maximizers had different weights,
+their midpoint would improve the penalized objective by strict concavity
+of the negative squared norm. For any feasible triple with
+\(\|\mathbf z\|\le C=\|\mathbf z^*\|\), optimality in (5) now gives
+\[
+ L(\mathbf z,b,s)\le\max(5)+\tfrac{\Gamma}{2}\|\mathbf z\|^2
+                    \le\max(5)+\tfrac{\Gamma}{2}C^2 .
+\]
+An optimizer of (5) inside the box attains both inequalities. Any
+maximizer of (15) must therefore attain both too. In the strict penalty
+case the slopes just computed force every optimal intercept into
+\([-U,U]\) at \(\mathbf z^*\). At equality increasing \(b\) by \(t\ge0\)
+and every slack by \((1-\alpha)t\) preserves feasibility and value.
+
+\lead{Example with unequal values.}
+Two absorbing states have respective scalar features and costs \(-1,+1\),
+one action, uniform \(\nu=\pi\), and \(\alpha=1/2,\ \kappa=6,\ \Gamma=1\).
+The triple \(z=1,\ b=-1,\ s=0\) is feasible. The negative-feature row
+requires \(b\le z-2+2s_-\). Thus \(L=b-3(s_-+s_+)\le z-2\).
+Subtracting \(z^2/2\) gives at most \(-3/2-(z-1)^2/2\).
+The displayed triple attains \(-3/2\) in (5) and \(-1\) in (15) with
+\(C=1,\ B\ge1\). Every penalized optimum has \(z=1\), so any common
+optimizer gives a value difference of \(1/2\), whatever box contains it.
+
+\lead{Full-rank features and the best error (16).}
+If the state feature vectors span a space of dimension \(|\mathcal S|\),
+they are linearly independent. Their Gram matrix
+\(\mathsf K_{xy}=\langle\Phi(x),\Phi(y)\rangle\) is invertible because
+\(c^\top\mathsf Kc=\|\sum_x c_x\Phi(x)\|^2>0\) for nonzero \(c\).
+For any target \(J\) take \(c=\mathsf K^{-1}J\) and
+\(\mathbf z=\sum_x c_x\Phi(x)\). Then \(J_{\mathbf z,0}=J\).
+In particular, once \(C\) contains this weight for \(J^*\), the
+best sup-norm error is zero for every \(B\ge0\). For general features the
+best error is nonincreasing as either radius grows, by inclusion of the
+feasible classes. The matching radius for a particular \(\Gamma\) is fixed
+by its optimizer. Exact representation uses a radius large enough for the
+interpolating weight.
+
+
+\partsection{Sampling and the intercept}{The idealized sampled fit and its intercept}
+\label{sec:offset}
+For the approximation bounds, \(\nu\) is an initial probability distribution.
+Equation (6) estimates the feature term by importance weighting and charges
+a quadratic penalty. The program analyzed here uses the exact relevance
+mean \(\nu^\top J\), a prescribed box for weight and intercept, and
+\(\kappa=2/(1-\alpha)\). Its guarantees concern fitted value error.
+The allowed values are \(\J=\{J_{\mathbf z,b}:\|\mathbf z\|\le C,\ |b|\le B\}\),
+with \(C,B\ge0\). For any realized sample let
+\(P_Nf=N^{-1}\sum_i f(X_i)\). Define
+\(r(J)=(J-TJ)_+\) and \(r_\mu(J)=(J-T_\mu J)_+\) pointwise.
+Since \(TJ\le T_\mu J\), \(0\le r_\mu(J)\le r(J)\).
+The idealized program (18) maximizes
+\[
+  \nu^\top J-\frac{2}{(1-\alpha)N}\sum_i s_i,\qquad
+  J\in\J,\quad s_i\ge0,\quad J(X_i)\le TJ(X_i)+s_i .
+\]
+Its least feasible slack is \(r(J)(X_i)\). The objective decreases
+strictly with each slack, so the optimum for each \(J\) fills in exactly
+these values. The reduced objective is
+\[
+                \nu^\top J-\frac{2}{1-\alpha}P_Nr(J). \tag{18}
+\]
+It has a maximizer on every draw. Projection onto the finite span of the
+state features preserves the fitted vector and weakly decreases the weight
+norm. Hence \(\J\) is a continuous image of a compact ball times \([-B,B]\). The reduced objective is continuous on that image.
+
+\lead{Exactly which intercepts maximize (18)?}
+Hold the weight fixed and put \(V(x)=\langle\Phi(x),\mathbf z\rangle\).
+Define the sample breakpoints \(u_i=(TV(X_i)-V(X_i))/(1-\alpha)\).
+The identity \(T(V+b)=TV+\alpha b\) gives
+\(r(V+b)(X_i)=(1-\alpha)(b-u_i)_+\). Since
+\(2(b-u_i)_+=b-u_i+|b-u_i|\), (18) becomes
+\[
+          \nu^\top V+\frac1N\sum_i u_i-\frac1N\sum_i |b-u_i| .
+\]
+Thus the optimal free intercepts are exactly the sample medians. In
+increasing order they form the interval between entries
+\(\lfloor(N+1)/2\rfloor\) and \(\lceil(N+1)/2\rceil\), counting from one.
+Between successive distinct entries the slope of the sum of distances
+is the number of entries to the left minus the number to the right.
+At a tied entry use the two one-sided slopes. This proves the interval
+description for odd and even samples, including repeated states.
+
+\newpage\subsection*{How large must the intercept box be?}
+Write \(K=\max_x\|\Phi(x)\|\), and \(\|g\|_\infty=\max_{x,a}|g_{x,a}|\).
+Every discounted feature difference has norm at most \((1+\alpha)K\), so every breakpoint has absolute value at most
+\[
+                  B_0=\frac{\|g\|_\infty+(1+\alpha)CK}{1-\alpha}.
+\]
+Every free maximizer is inside the box when \(B\ge B_0\). Conversely, one
+can maximize over the free intercept at any feasible weight by choosing a
+median in that box. Hence the boxed and free problems have identical
+maximizers, including their slacks, and for \(B>B_0\) every optimizer lies
+strictly inside the box.
+
+For a particular weight there is a more precise test. A box that intersects
+the median interval preserves the best value at that weight. It preserves
+every optimal intercept precisely when it contains the whole interval.
+For instance, with two breakpoints \(-1,3\), any \(b\in[-1,3]\) gives the
+same sum of distances, \(4\). A box \([-1,1]\) keeps this optimal value
+and removes the optimal choices in \((1,3]\).
+
+\lead{A positive-probability failure of the printed bound.}
+For the printed rule \(B>2CK+\|g\|_\infty/(1-\alpha)\), take two states
+with features \(-1,+1\), zero cost, and a single action leading from
+either state to the positive-feature state. Use \(\alpha=1/2,\ C=1\)
+and uniform \(\nu\). One draw at the negative-feature state reduces (18) to
+\[
+ \max\ b-4s \qquad\text{subject to}\qquad
+ -1\le z\le1,\quad s\ge0,\quad b-3z\le2s .
+\]
+With a free intercept, \(b-4s\le3z-2s\le3\), and \((z,b,s)=(1,3,0)\)
+attains \(3\). Now take \(B=5/2\). This clears the printed threshold
+of \(2\), yet \(b-4s\le5/2\). The triple \((1,5/2,0)\) attains the
+smaller value. The draw occurs with probability \(1/4\) under the ideal
+distribution in the next section. The example attains the corrected
+radius \(B_0=3\).
+
+
+\partsection{Occupancy and sampling}{Discounted visits and uniform sampling error}
+\label{sec:statistics}
+Let \(\nu\) be the starting distribution. For a policy \(\mu\), its
+discounted occupancy distribution assigns a state its expected discounted
+fraction of visits according to
+\[
+ \pi_{\mu,\nu}^{\top}
+ =(1-\alpha)\sum_{t=0}^{\infty}\alpha^t\nu^\top P_\mu^t
+ =(1-\alpha)\nu^\top(I-\alpha P_\mu)^{-1}. \tag{17}
+\]
+Each \(\nu^\top P_\mu^t\) is a probability row and the coefficients sum
+to one. The matrix series converges entrywise. Multiplying the partial
+sum by \(I-\alpha P_\mu\) gives \(I-\alpha^{n+1}P_\mu^{n+1}\to I\).
+Thus (17) is also the unique solution of
+\(\pi_{\mu,\nu}^\top=(1-\alpha)\nu^\top+\alpha\pi_{\mu,\nu}^\top P_\mu\).
+Subtracting \(J_\mu=T_\mu J_\mu\) from the one-step equation yields
+\[
+ \nu^\top(J-J_\mu)=\pi_{\mu,\nu}^\top(J-T_\mu J)/(1-\alpha).
+\]
+In the example of the preceding section, only time zero can contribute a
+visit to the negative-feature state, giving mass \((1-\alpha)\nu_-=1/4\).
+
+\lead{Theorem 3 (uniform sampling for one policy).}
+Fix a policy \(\mu\) and any law \(\pi\) on the states. Draw
+\(X_1,\ldots,X_N\) independently from \(\pi\). Write \(Pf=\pi^\top f\).
+For \(0<\delta<1,\ \epsilon>0\), put
+\[
+ \begin{aligned}
+ \Cbar&=4CK(1+\alpha)+4B(1-\alpha)+2\|g\|_\infty,\\
+ \Xi&=\Cbar\bigl(1+\sqrt{2\log(1/\delta)}\bigr).
+ \end{aligned}
+\]
+Here and throughout the approximation bounds \(K=\max_x\|\Phi(x)\|\).
+If \(N\ge1\) and \(N\ge\Xi^2/\epsilon^2\), then
+\[
+ \Prob\left\{\sup_{J\in\J}\bigl(P r_\mu(J)-P_Nr_\mu(J)\bigr)
+                   \ge\epsilon\right\}\le\delta .\tag{T3}
+\]
+The function can be fitted on the same draws. Only the policy and the
+sampling law are fixed in advance.
+
+\lead{Pointwise bounds (Lemma 3).}
+Let \(d_\mu(x)=\Phi(x)-\alpha P_\mu\Phi(x)\). Then
+\[
+ r_\mu(J_{\mathbf z,b})(x)
+   =(\langle d_\mu(x),\mathbf z\rangle+(1-\alpha)b-g_\mu(x))_+ .
+\]
+Since \(\|d_\mu(x)\|\le(1+\alpha)K\), both \(r_\mu(J)\) and its
+optimal-action counterpart \(r(J)\) lie in \([0,\Cbar/2]\).
+The latter is the pointwise maximum of the action residuals.
+
+\lead{A check on the signed identity.}
+Start at \(s\) in a two-state model with \(\alpha=1/2\). Under the given
+policy, \(s\) costs \(1\) and moves uniformly to \(s,t\), while \(t\) costs
+\(2\) and stays at \(t\). Balance gives \(\pi_{\mu,\nu}=(2/3,1/3)\);
+policy evaluation gives \(J_\mu=(8/3,4)\). For \(J=(3,2)\), the signed
+residuals are \(3/4,-1\). Their occupancy mean is \(1/6\). Dividing by
+\(1-\alpha\) recovers the initial error \(3-8/3=1/3\).
+
+\newpage\subsection*{Bounding the complexity of the residual class}
+For a nonempty class \(\mathcal F\) write
+\[
+ \widehat R_N(\mathcal F)=
+   \E_\sigma\sup_{f\in\mathcal F}\frac{2}{N}\sum_i\sigma_i f(X_i),
+ \qquad R_N(\mathcal F)=\E_X\widehat R_N(\mathcal F).
+\]
+The signs are independent, uniform on \(\{-1,1\}\), and independent of the
+sample. This is the manuscript's normalization.
+
+\lead{Lemma 2 and Corollary 1.}
+For \(x\mapsto\langle d_\mu(x),\mathbf z\rangle\), the empirical complexity
+is at most \(2CK(1+\alpha)/\sqrt N\). Conditional on the sample,
+Cauchy--Schwarz bounds the signed supremum by
+\((2C/N)\|\sum_i\sigma_i d_\mu(X_i)\|\). The expected squared norm of this
+sum is \(\sum_i\|d_\mu(X_i)\|^2\), since distinct signs have zero product
+in expectation. The intercept contributes at most
+\(2(1-\alpha)B/\sqrt N\) by the same argument for scalar signs.
+
+Subtracting the state cost and taking the positive part applies a
+1-Lipschitz function to each coordinate. To check contraction for this
+one-sided supremum, condition on every sign but one. For candidate \(j\),
+let \(u_j\) be its score at that coordinate and \(a_j\) the signed sum of
+the other scores. Twice the conditional expectation for that coordinate is
+\(\sup_{j,k}(a_j+a_k+\varphi(u_j)-\varphi(u_k))\).
+Replacing the last difference by \(|u_j-u_k|\) bounds it above.
+Exchanging \(j,k\) makes the bound equal to the expression for the
+identity function. Repeat coordinate by coordinate. Thus for
+\(\mathcal F_\mu=\{r_\mu(J):J\in\J\}\),
+\[
+ \widehat R_N(\mathcal F_\mu)
+ \le 2[CK(1+\alpha)+B(1-\alpha)]/\sqrt N\le\Cbar/\sqrt N .
+\]
+Taking expectations proves Corollary~1.
+
+\lead{Lemma 1 (one-sided concentration).}
+For independent draws from the same law \(P\) on a finite or countable discrete state space,
+suppose \(\mathcal F\) is nonempty and \(|f(x)|\le B_f\) for every \(f,x\),
+with \(B_f>0\). For \(Z=\sup_{f\in\mathcal F}(Pf-P_Nf)\),
+\[
+ \Prob\{Z\ge R_N(\mathcal F)+B_f\sqrt{2\log(1/\delta)/N}\}\le\delta .
+\]
+To reduce an uncountable class to a countable one, use the
+pointwise topology and choose one function from each nonempty basic open set
+given by rational intervals on finitely many states. Empirical means
+are continuous, and bounded convergence gives continuity of the population
+mean on this uniformly bounded class. Hence the countable dense subclass
+has the same suprema.
+
+\newpage\subsection*{From symmetrization to a probability bound}
+An independent sample with empirical mean \(P_N'\) gives
+\(\E Z\le\E\sup_f(P_N'f-P_Nf)\), by bringing the supremum inside the
+expectation. Swapping each pair of observations independently preserves
+its law and inserts a uniform sign into each difference. Splitting the
+signed sum at the supremum and using symmetry gives \(\E Z\le R_N(\mathcal F)\).
+Changing one observation changes \(Z\) by at most \(2B_f/N\).
+
+For completeness, if changing coordinate \(i\) of an independent sample
+changes a statistic by at most \(c_i\), the successive conditional-mean
+increments are centered and have conditional ranges of width at most \(c_i\).
+For such an increment the second derivative of the log moment-generating
+function is a tilted variance, at most \(c_i^2/4\). Integrating twice and
+iterating conditional expectations bounds the centered exponential moment
+by \(\exp(\lambda^2\sum_i c_i^2/8)\). Markov's inequality optimized at
+\(\lambda=4t/\sum_i c_i^2\) gives
+\(\Prob(Z-\E Z\ge t)\le\exp(-2t^2/\sum_i c_i^2)\) for \(t>0\) and a
+positive denominator. With \(c_i=2B_f/N\) this proves Lemma~1. If \(B_f=0\)
+and \(\mathcal F=\{0\}\), its printed closed event has probability one.
+
+\lead{Finishing Theorem 3 and the fixed-function part of Lemma 3.}
+For \(\Cbar>0\), apply Lemma~1 with \(B_f=\Cbar/2\) to \(\mathcal F_\mu\).
+The threshold in Lemma~1 is at most \(\Xi/\sqrt N\le\epsilon\), so the event
+in (T3), including equality, has probability at most \(\delta\).
+For a single fixed \(f\) from either residual class,
+\(P_N f\) changes by at most \(\Cbar/(2N)\) in each coordinate.
+The same tail bound now gives
+\[
+ \Prob(P_Nf-Pf\ge\epsilon)\le
+   \exp(-8N\epsilon^2/\Cbar^2)\le\delta^4 .
+\]
+If \(\Cbar=0\), all the residuals vanish. Since \(\epsilon>0\), both failure
+events are empty. The sample bounds depend on the radius and on feature
+norms, without a factor for the dimension of the ambient Hilbert space.
+
+
+\partsection{Approximation guarantees}{The approximation error of the fitted value}
+\label{sec:guarantees}
+Choose an optimal policy \(\mu^*\) from Section~\ref{sec:bellman}.
+Throughout this section \(X_i\) are independent draws from
+\(\pi=\occ\), \(Pf=\pi^\top f\), and \(\widehat J\) is any optimizer of
+(18). Use the sample threshold and confidence parameters of Theorem~3.
+Measure error by \(\|U\|_{1,\nu}=\sum_x\nu_x|U(x)|\), and let
+\(\|U\|_\infty=\max_x|U(x)|\).
+
+\lead{Theorem 1 (uniform comparator error).}
+On an event of probability at least \(1-\delta\), every optimizer satisfies
+\[
+ \|J^*-\widehat J\|_{1,\nu}\le
+ \frac{3+\alpha}{1-\alpha}\min_{V\in\J}\|J^*-V\|_\infty
+            +\frac{2\epsilon}{1-\alpha}. \tag{19$'$}
+\]
+In particular this implies the printed (19), which has confidence
+\(1-\delta-\delta^4\) and additive term \(4\epsilon/(1-\alpha)\).
+
+\lead{A common inequality for both theorems.}
+Let \(D=(I-\alpha P_{\mu^*})^{-1}\), which has nonnegative entries by (17).
+For any \(J\), \(J-J^*=D(J-T_{\mu^*}J)\), hence
+\((J-J^*)_+\le D r_{\mu^*}(J)\). Using
+\(|u|=-u+2u_+\) and \(\nu^\top D=\pi^\top/(1-\alpha)\) gives
+\[
+ \|J^*-J\|_{1,\nu}\le\nu^\top(J^*-J)+\tfrac{2}{1-\alpha}P r_{\mu^*}(J).
+\]
+On the good event of (T3), the last mean for the fitted value is at most
+\(P_Nr(\widehat J)+\epsilon\). Optimality in (18) compares its reduced
+objective with that of every \(V\in\J\), giving
+\[
+ \|J^*-\widehat J\|_{1,\nu}
+ \le\nu^\top(J^*-V)+\tfrac{2}{1-\alpha}\bigl(P_Nr(V)+\epsilon\bigr).
+ \tag{*}\label{eq:oracle}
+\]
+The comparator needs slack \((V-TV)_+\). For a one-state zero-cost
+self-loop, \(\alpha=1/2,\ V=1\), this is \(1/2\). Reversing the sign as in
+Appendix~B.2 gives zero and violates the constraint.
+
+\lead{Proof of Theorem 1.}
+Let \(d=\|J^*-V\|_\infty\). Contraction of \(T\) and \(TJ^*=J^*\) imply
+\(r(V)(x)\le(1+\alpha)d\) at every state. Also \(\nu^\top(J^*-V)\le d\).
+Substitution in \eqref{eq:oracle} gives (19$'$) by minimizing over the
+compact set of fits. This step requires only the event for the fitted
+function.
+
+\newpage\subsection*{A sharper comparison when errors vary across states}
+For a positive state weight \(\psi(x)\ge1\), put
+\[
+ \|U\|_{\infty,1/\psi}=\max_x |U(x)|/\psi(x),\qquad
+ \beta(\psi)=\max_{x,a}\frac{P_a\psi(x)}{\psi(x)} .
+\]
+A larger \(\psi(x)\) allows greater error at \(x\). The two means of
+\(\psi\) in the guarantee charge for this under initial and discounted visits.
+
+\lead{Theorem 2 (weighted comparison).}
+With probability at least \(1-\delta-\delta^4\), every optimizer satisfies
+\[
+\begin{aligned}
+ \|J^*-\widehat J\|_{1,\nu}
+ &\le \inf_{\substack{V\in\J\\\psi\ge1}}
+  \left(\nu^\top\psi+
+    \frac{2(\pi^\top\psi)(1+\alpha\beta(\psi))}{1-\alpha}\right)
+            \|J^*-V\|_{\infty,1/\psi}
+       +\frac{4\epsilon}{1-\alpha}.
+\end{aligned}\tag{25}
+\]
+For \(\psi\equiv1\) its coefficient is \((3+\alpha)/(1-\alpha)\).
+For the nontrivial confidence bounds we use \(0<\delta<1\). The
+printed probability lower bounds for Theorems~1 and~2 are vacuous if
+\(\delta\ge1\).
+
+\lead{Proof.}
+Define \(L(V)=\nu^\top(J^*-V)+2Pr(V)/(1-\alpha)\). Choose a minimizer
+\(V_0\) of this continuous functional on \(\J\) \emph{before} the draws.
+The fixed-function part of Lemma~3 then gives
+\(P_Nr(V_0)\le Pr(V_0)+\epsilon\) outside an event of probability
+at most \(\delta^4\). Intersect this good event with that of
+\eqref{eq:oracle}. For every optimizer the error is at most
+\(L(V_0)+4\epsilon/(1-\alpha)\).
+
+For any \(V,\psi\), put \(d=\|J^*-V\|_{\infty,1/\psi}\). For every action,
+\[
+ |\alpha P_a(J^*-V)(x)|\le\alpha d\,P_a\psi(x)
+                      \le\alpha d\,\beta(\psi)\psi(x).
+\]
+Taking the minimum over actions preserves this last bound on the
+difference. Hence \(r(V)(x)\le(1+\alpha\beta(\psi))d\psi(x)\), while
+\(J^*(x)-V(x)\le d\psi(x)\). Averaging gives the comparison term in
+(25) as an upper bound for \(L(V)\) and hence for \(L(V_0)\).
+This holds for every pair \(V,\psi\) on the same event. Taking the
+infimum proves the result, even when no weight attains it.
+
+\lead{The infimum can be unattained.}
+Two absorbing states have costs \(0,5\), discount \(1/2\), and initial
+weights \(9/10,1/10\). Then \(\pi=\nu,\ J^*=(0,10)\). Take
+\(C=B=0\), so \(V=0\). For \(\psi=(u,v)\ge1\) the comparison term is
+\(7+63u/v\). Its infimum is \(7\), approached with \(u=1,\ v\to\infty\).
+
+
+\partsection{Change of sampling law}{Approximation under a different sampling law}
+\label{sec:samplinglaw}
+Keep the initial distribution \(\nu\) and an optimal policy \(\mu^*\).
+Write \(\pi=\occ\) for the ideal law, but draw the data in (18) independently
+from an arbitrary probability distribution \(\rho\). Use \(\rho_N f\)
+for the observed mean. Theorem~3 still controls the difference between
+\(\rho^\top f\) and \(\rho_Nf\). The loss calculation uses \(\pi^\top f\),
+so we need to pass between these two \emph{population} means.
+
+\lead{Total variation.}
+Use the convention
+\(\mathrm{TV}(\pi,\rho)=\tfrac12\sum_x|\pi_x-\rho_x|\).
+For \(0\le f\le L\), subtracting \(L/2\) from \(f\) leaves the difference
+of means unchanged and gives
+\[
+ |(\pi-\rho)^\top f|\le L\,\mathrm{TV}(\pi,\rho).
+\]
+Opposite point masses and the indicator of the first point attain equality.
+This inequality also holds for two realized empirical distributions.
+Consequently, when a difference of nonnegative slack means is multiplied
+by \(2/(1-\alpha)\), its sharp general TV coefficient is
+\(2\|s\|_\infty/(1-\alpha)\). The coefficient printed in Appendix~B.3 is
+half that under the convention above.
+
+\lead{Approximation guarantees under the observed law.}
+Let \(L=\Cbar/2,\ \tau=\mathrm{TV}(\pi,\rho)\), with the same
+\(\epsilon,\delta,N\) as in Theorem~3. With probability at least
+\(1-\delta\), every optimizer now satisfies
+\[
+ \|J^*-\widehat J\|_{1,\nu}\le
+ \frac{3+\alpha}{1-\alpha}\min_{V\in\J}\|J^*-V\|_\infty
+          +\frac{2}{1-\alpha}(\epsilon+L\tau).
+\]
+Indeed for the fixed-policy fitted residual \(f=r_{\mu^*}(\widehat J)\),
+\(\pi^\top f\le\rho^\top f+L\tau\le\rho_Nf+\epsilon+L\tau\).
+Insert this estimate in the proof of \eqref{eq:oracle}.
+For any comparator \(V\) fixed before sampling, Lemma~3 also gives
+\(\rho_Nr(V)\le\rho^\top r(V)+\epsilon\) with failure probability
+at most \(\delta^4\). Therefore with confidence \(1-\delta-\delta^4\),
+\[
+ \|J^*-\widehat J\|_{1,\nu}\le\nu^\top(J^*-V)
+ +\frac{2}{1-\alpha}\bigl[\rho^\top r(V)+2\epsilon+L\tau\bigr].
+\]
+One may take the deterministic minimizer of
+\(\nu^\top(J^*-V)+2\rho^\top r(V)/(1-\alpha)\) on \(\J\).
+The weighted comparison in (25) then carries over with
+\(\rho^\top\psi\) in place of \(\pi^\top\psi\) and this extra TV term.
+
+\lead{What happens to two empirical distributions?}
+For a fixed \(N\), convergence also holds in probability under an explicit
+coupling. Put \(m_x=\min(\pi_x,\rho_x)\). Its total mass is \(1-\tau\).
+For one pair put mass \(m_x\) at \((x,x)\). When \(\tau>0\), add mass
+\((\pi_x-m_x)(\rho_y-m_y)/\tau\) at \((x,y)\). The marginals are
+\(\pi,\rho\), and the added mass is off the diagonal. At \(\tau=0\) use only
+the diagonal. Draw \(N\) pairs independently. All coordinates agree with
+probability \((1-\tau)^N\), so the probability that the two empirical laws
+differ is at most \(1-(1-\tau)^N\le N\tau\). With independent sampling, two
+single draws from the same fair two-state law differ with probability \(1/2\).
+
+\newpage\subsection*{An observable correction under a ratio bound}
+Assume \(\pi_x\le(1+k)\rho_x\) at every state for some \(k\ge0\).
+For any \(f\ge0\), \(\pi^\top f\le(1+k)\rho^\top f\).
+For \(f=r_{\mu^*}(\widehat J)\), write \(\overline s=N^{-1}\sum_i\widehat s_i\)
+for the observed optimal mean slack. It dominates \(\rho_Nf\).
+On the same uniform event,
+\[
+ \pi^\top f\le \rho_N f+(1+k)\epsilon+k\overline s.
+\]
+The fixed-comparator guarantee above therefore holds with
+\(2\epsilon+L\tau\) replaced by \((2+k)\epsilon+k\overline s\), at the
+same confidence. To read the two corrections alongside (25), define
+\[
+ W_\rho=\inf_{\substack{V\in\J\\\psi\ge1}}
+ \left(\nu^\top\psi+\frac{2(\rho^\top\psi)(1+\alpha\beta(\psi))}{1-\alpha}\right)
+             \|J^*-V\|_{\infty,1/\psi}.
+\]
+Taking the deterministic population minimizer as in Theorem~2 gives, at
+confidence \(1-\delta-\delta^4\), the corresponding weighted bounds
+\[
+ \|J^*-\widehat J\|_{1,\nu}\le W_\rho+
+ \frac{2}{1-\alpha}
+ \begin{cases}
+  2\epsilon+L\tau & \text{for arbitrary }\rho,\\
+  (2+k)\epsilon+k\overline s & \text{when }\pi\le(1+k)\rho .
+ \end{cases}
+\]
+
+\lead{A counterexample for empirical slacks.}
+Appendix~B.3 instead proposes coupling two samples so that
+\((\pi_N-\rho_N)^\top\widehat s\le k\rho_N^\top\widehat s\) with high
+probability, where \(\widehat s(x)=r(\widehat J)(x)\) is defined on
+all states and \(\pi_N,\rho_N\) denote their two empirical distributions.
+The following example applies to every coupling, meaning any joint draw
+with the prescribed i.i.d. marginal laws.
+
+Take two absorbing states, discount \(1/2\), one action, and costs \(-1,+1\).
+Call the negative-cost state \(s\). Put \(\Phi=0,\ C=B=1\). Every fit is a
+constant \(b\in[-1,1]\) and its least statewise slack is
+\((1+b/2)\mathbf1_{\{s\}}\). Its positive factor cancels from the proposed
+comparison even when \(b\) depends on the sample. Let \(\rho_s=1/2\) and
+\(\pi_s=\nu_s=1-t\) with \(0\le t\le1\). Absorption gives this ideal occupancy exactly, and
+\(\pi\le2\rho\). Thus \(k=1\) suffices.
+
+For odd \(N\), the observed sample visits \(s\) fewer than \(N/2\) times
+with probability exactly \(1/2\), by symmetry. The ideal sample consists
+entirely of \(s\) with probability at least \(1-Nt\). Under any coupling
+the intersection has probability at least \(1/2-Nt\). On it the ideal
+indicator mean is one and twice the observed mean is strictly smaller.
+For \(t=0\) the failure probability is exactly \(1/2\) at every odd
+sample size. For \(t=1/(4N)\) both laws have full support and the failure
+probability is at least \(1/4\). The latter is a uniform obstruction over
+positive laws. The extra sampling term in the corrected guarantee
+accounts for fluctuations even when the observed slacks are small.
+
+
+\partsection{The active-set algorithm}{Two-coordinate descent and the correct update}
+\label{sec:active}
+Return to the sampled quadratic \(F\) and its feasible set \(\Lambda\)
+in Section~\ref{sec:dual}. Write \(h=Q\lambda+R\) for the gradient at a
+feasible multiplier. A coordinate is a draw--action pair \(p=(i,a)\), and
+\(e_p\) denotes its unit vector. A transfer \(e_p-e_q\) moves mass from
+\(q=(j,c)\) to a distinct \(p\). A positive step is legal precisely when
+\(\lambda_q>0\) and either \(i=j\) or row \(i\) is below its cap.
+
+\lead{Proposition 2.}
+At every suboptimal feasible multiplier there is a legal pair with
+\(h_p<h_q\). All sufficiently small positive steps along \(e_p-e_q\)
+strictly improve \(F\). A feasible point is globally optimal exactly when
+all legal transfers have nonnegative slope.
+
+\lead{Lemma 4 (exchange).}
+For finite vectors with \(\sum_i x_i=0,\ \sum_i x_i y_i<0\), some indices
+satisfy \(x_i>0,\ x_j<0,\ y_i<y_j\). The positive and negative parts of
+\(x\) carry the same nonzero mass. Dividing by this mass shows that the
+weighted average of \(y\) on the positive coordinates is smaller than its
+weighted average on the negative ones. At least one such pair exists.
+
+\lead{Proof of Proposition 2.}
+For any direction \(d\),
+\[
+ F(\lambda+td)-F(\lambda)=t h^\top d+\tfrac12 t^2 d^\top Qd.
+\]
+If \(\lambda'\) is feasible and better, \(h^\top(\lambda'-\lambda)<0\)
+by positive semidefiniteness of \(Q\). Suppose every legal transfer has
+nonnegative slope. In each row \(i\) every positive coordinate must have
+the minimum score \(m_i=\min_a h_{ia}\), since a within-row transfer can
+move mass to any action there. Let \(x_i=\sum_a(\lambda'_{ia}-\lambda_{ia})\).
+Then \(\sum_i x_i=0\), and
+\(\sum_i m_i x_i\le h^\top(\lambda'-\lambda)<0\). Lemma~4 gives a gaining
+row \(i\) with smaller \(m_i\) than some losing row \(j\). The gaining row
+has room, and the losing row has a positive coordinate of score \(m_j\).
+Transferring from it to a cheapest action in \(i\) is legal and has negative
+slope, contradicting the assumption. The exact quadratic expansion shows
+that all sufficiently small positive steps for this pair decrease \(F\).
+
+\newpage\subsection*{Selecting and updating the pair}
+Under the normalization \(\|d\|_\infty\le1\) and sparsity at most two
+in (20), the total-mass constraint forces each nonzero direction to have
+opposite entries \(t,-t\) with \(0<t\le1\). A negative slope is minimized
+at \(t=1\). For a receiver in a row with room, compare the lowest score
+in those rows with the largest score among all positive coordinates.
+For a receiver in a full row, compare its lowest score with the largest
+score among the positive coordinates of that same row. Skip empty groups
+and choose the most negative difference across all candidates.
+A negative difference automatically picks distinct coordinates. If none
+exists, zero solves (20) and Proposition~2 certifies global optimality.
+
+With \(\mathcal B=\{p,q\}\), freeze \(\lambda_{\bar{\mathcal B}}\) and
+let \(u=\lambda_{\mathcal B}\). The exact restriction of \(F\), up to a
+constant, is
+\[
+ \tfrac12u^\top Q_{\mathcal B\mathcal B}u+
+ u^\top(R_{\mathcal B}+Q_{\mathcal B\bar{\mathcal B}}\lambda_{\bar{\mathcal B}}).
+ \tag{22$'$}
+\]
+Indeed the two symmetric off-diagonal blocks have equal contributions.
+The printed (22) doubles the quadratic and cross terms and keeps the same
+linear cost. One can also solve along the transfer. Let \(t_{\max}\)
+be the donor's mass, further limited by the receiver's available row capacity
+for a cross-row move. Put \(c=(e_p-e_q)^\top Q(e_p-e_q)\ge0\). If
+\(h_p<h_q\), the minimizing step on \([0,t_{\max}]\) is
+\[
+ t^*=\begin{cases}
+ \min\{t_{\max},(h_q-h_p)/c\}, & c>0,\\
+ t_{\max}, & c=0 .
+ \end{cases}
+\]
+This proves strict descent and the stated stopping test.
+
+\lead{A stalled update in (22).}
+Take two states \(s,t\), actions \(A,B\) moving to \(s,t\), respectively,
+and one draw at \(s\). The actions cost \(0,-1\) at \(s\). Use
+\(\Phi(s)=0,\ \Phi(t)=2,\ \alpha=1/2,\ \Gamma=1,\ \kappa=2\), with
+uniform relevance and sampling laws. Then \(m=0\), the feature differences
+are \(0,-1\), \(Q=\mathrm{diag}(0,1)\), and \(R=(0,-1)\). All feasible
+multipliers have the form \((2-u,u)\) for \(0\le u\le2\). Completing
+the square shows where the two updates go:
+\[
+\begin{aligned}
+ \text{Restriction of (9)} &\qquad \tfrac12u^2-u
+                         =\tfrac12(u-1)^2-\tfrac12 ,\\
+ \text{Printed update (22)}&\qquad u^2-u=(u-\tfrac12)^2-\tfrac14 .
+\end{aligned}
+\]
+Starting at \(u=1/2\), the printed update returns \(1/2\) despite the
+available decrease. The correct update goes to \(u=1\), lowering the
+true objective from \(-3/8\) to \(-1/2\).
+
+
+\partsection{Corrections and proof sources}{Corrections to the manuscript and formal proofs}
+\label{sec:errata}
+\lead{The numbered results.}
+Theorems~1--3, Proposition~2, Lemmas~2--4, and Corollary~1 hold under the
+hypotheses stated in these sections. Proposition~1 needs a penalty
+threshold and a normalization of the dual value. Lemma~1 needs a positive
+envelope for its closed failure event. The zero-envelope case of Theorem~3
+holds directly. The following entries locate the changes a reader would
+make when revising the manuscript.
+
+\begin{description}
+\item[\S2.1 and (1).] Minimize discounted cost over policies. The Bellman
+LP maximizes a pointwise lower bound and uniquely recovers the cost when
+all relevance weights are positive. See Section~\ref{sec:bellman}.
+\item[Proposition 1 and \S2.5.] Require \(\kappa\ge1/(1-\alpha)\) and
+convert the objective value of (9) before equating it to the primal
+maximum. Include the current state in the kernel neighborhood.
+See Sections~\ref{sec:dual} and~\ref{sec:kernel}.
+\item[\S3.1 and (15).] Match \(C\) to the optimal weight norm, add the
+quadratic penalty back when comparing values, and distinguish full equality
+of optimizer sets from equality inside the intercept box at the threshold.
+Full-rank interpolation remains valid. See Section~\ref{sec:regular}.
+\item[\S3.2 and (18).] The optimal free intercept is a sample median.
+The corrected uniform intercept radius can exceed the printed bound. Theorems~1--3
+use the specified bounded class and retain their guarantees for it.
+See Sections~\ref{sec:offset}--\ref{sec:guarantees}.
+\item[Appendices B.1, B.2 and C.] Use the positive fixed-policy residual
+class and its envelope \(\Cbar/2\) in Theorem~3. The final display on
+manuscript p.~30 uses the linear class and a different bound symbol. Use \((V-TV)_+\) for the comparator slack, and choose a
+population comparator before sampling for the weighted bound.
+See Sections~\ref{sec:statistics} and~\ref{sec:guarantees}.
+\item[Appendix B.3.] With half-\(\ell_1\) total variation the printed
+coefficient is too small. Population likelihood-ratio domination alone
+does not deliver the proposed empirical inequality. The replacement
+bounds quantify the extra sampling error. See Section~\ref{sec:samplinglaw}.
+\item[\S4.1--4.2.] Skip unavailable pair candidates. Use the exact
+restricted quadratic (22$'$) for the update. Equation (22) can stall at a
+suboptimal point. See Section~\ref{sec:active}.
+\end{description}
+\newpage\subsection*{Sources and reproducibility}
+The manuscript is N.~Bhat, V.~F.~Farias, C.~C.~Moallemi and A.~T.~Zheng,
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf}{\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
+version of August 29, 2022. The
+\href{https://github.com/nikhilpb/kadp}{proof repository} contains the
+Lean files, the source of this document and the independently readable
+proof notes. State and action spaces are finite in the dynamic programming
+results. Lemma~1 also covers countably infinite discrete state spaces.
+
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.42\linewidth}>{\raggedright\arraybackslash}p{.52\linewidth}@{}}
+\toprule
+Result & Lean sources\\ \midrule
+Bellman LP and policy convention & \leanfile{BellmanLP}{Bellman LP and cost example}\\
+Proposition 1 and kernel policy &
+ \leanfile{PrimalAttainment}{Primal attainment},
+ \leanfile{Duality}{duality gap},
+ \leanfile{KernelPolicy}{kernel evaluation}\\
+Population regularization and full rank &
+ \leanfile{Regularization}{Optimal sets, values and interpolation}\\
+Intercept in (18) & \leanfile{Offset}{Median criterion and counterexample}\\
+(17), Lemmas 1--3, Corollary 1 and Theorem 3 &
+ \leanfile{Occupancy}{Occupancy},
+ \leanfile{OneSidedConcentration}{one-sided tail},
+ \leanfile{ResidualComplexity}{residual complexity},
+ \leanfile{UniformDeviation}{fixed comparator},
+ \leanfile{Theorem3}{Theorem 3}\\
+Theorems 1 and 2 &
+ \leanfile{Theorem1}{Unweighted bound},
+ \leanfile{Theorem2}{weighted bound},
+ \leanfile{Examples/Theorem2}{unattained infimum}\\
+Change of sampling law &
+ \leanfile{SamplingLaw}{Transport bounds and ratio counterexample},
+ \leanfile{WeightedSampling}{weighted guarantees}, \leanfile{SamplingCoupling}{empirical coupling}\\
+Lemma 4 and Proposition 2 &
+ \leanfile{Exchange}{Exchange},
+ \leanfile{ActiveSet}{two-coordinate descent},
+ \leanfile{PairSelection}{pair search},
+ \leanfile{Examples/Proposition2}{stalling example}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The Lean package uses \href{https://github.com/leanprover-community/mathlib4}{mathlib}
+for finite sums, Hilbert spaces and probability,
+\href{https://github.com/LeanEconomics/DynamicProgramming/tree/9d4783f3fb282444f8f3a91c4e6439293dd4bacc}{LeanEconomics}
+for Bellman operators, policy values and discounted dynamics, and
+\href{https://github.com/auto-res/lean-rademacher/tree/db9f18714b0b9934553c37db1b41250462dc7faa}{FoML}
+for concentration and Rademacher complexity. The repository pins the
+library revisions and Lean toolchain. Running \texttt{lake build} checks
+the declarations. The repository's \href{https://github.com/nikhilpb/kadp/blob/main/README.md}{reproduction instructions}
+also give the kernel replay and axiom checks.
+\end{document}

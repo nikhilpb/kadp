@@ -1,0 +1,157 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[top=21mm,bottom=22mm,left=26mm,right=26mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\definecolor{link}{HTML}{205973}
+\usepackage[colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
+\hypersetup{pdftitle={Penalties, radius constraints, and exact interpolation}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\raggedbottom
+\newcommand{\R}{\mathbb R}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\vz}{\mathbf z}
+\newcommand{\Jfit}{\widetilde J}
+\newcommand{\lead}[1]{\par\smallskip\textbf{#1}\enspace}
+\begin{document}
+
+{\LARGE\bfseries Penalties, radius constraints,\par and exact interpolation\par}
+\medskip
+A quadratic penalty selects a weight vector whose norm supplies a matching radius
+constraint. The two formulations then share an optimizer, but their optimal
+values differ by the penalty paid at that optimizer. The unpenalized intercept
+determines when a finite intercept bound retains every optimizer.
+
+\section*{The population programs}
+Let $\mathcal S,\mathcal A$ be finite nonempty sets. At state $x$, action $a$
+costs $g_{x,a}$ and has next-state law $p(x,\cdot,a)$. Let $0<\alpha<1$ be
+the discount, $\delta=1-\alpha$, $\nu$ the state relevance weights and $\pi$
+a probability distribution over states. For features $\Phi(x)$ in a real
+Hilbert space, a weight $\vz$ and an intercept $b$ give the fit
+$\Jfit_{\vz,b}(x)=\ip{\Phi(x)}{\vz}+b$. Write
+\[
+ m=\sum_x\nu_x\Phi(x),\qquad
+ d_{x,a}=\Phi(x)-\alpha\sum_y p(x,y,a)\Phi(y).
+\]
+The Bellman inequalities are equivalent to
+\[
+ s_x\ge0,\qquad s_x\ge\ip{d_{x,a}}{\vz}+\delta b-g_{x,a}
+ \quad(x\in\mathcal S,\ a\in\mathcal A).
+\]
+Fix $\kappa,\Gamma>0$. Program (5) maximizes $P$ on these inequalities.
+Program (15) maximizes $F$ with the additional bounds $\norm{\vz}\le C$,
+$|b|\le B$, where
+\[
+ F(\vz,b,s)=\ip{m}{\vz}+b-\kappa\sum_x\pi_x s_x,\qquad
+ P(\vz,b,s)=F(\vz,b,s)-\tfrac{\Gamma}{2}\norm{\vz}^2.
+\]
+
+\lead{The penalty threshold.}
+Adding $t\ge0$ to $b$ and $\delta t$ to every $s_x$ preserves feasibility.
+This changes both objective functions by $(1-\kappa\delta)t$.
+A feasible starting point is $\vz=0$, $s=0$ and $b=-\max_{x,a}|g_{x,a}|/\delta$.
+Thus (5) is unbounded above if $\kappa<1/\delta$.
+For $\kappa\ge1/\delta$, (5) attains a finite maximum, as proved on the next page.
+At $\kappa=1/\delta$ the same shift takes any optimizer to another optimizer
+for every $t\ge0$. Every finite $B$ excludes some of them.
+
+\newpage
+\section*{Attainment in the unrestricted program}
+Let $D=\max_{x,a}\norm{d_{x,a}}$, $G=\max_{x,a}|g_{x,a}|$, and
+$T(R)=(DR+G)/\delta$. For a feasible point with $\norm{\vz}\le R$,
+Cauchy--Schwarz gives $|\ip{d_{x,a}}{\vz}-g_{x,a}|\le\delta T(R)$.
+Two adjustments keep the weight fixed.
+\begin{itemize}
+\item If $b<-T(R)$, choose $b'=-T(R)$ and $s'=0$. Every row is feasible
+and the objective increases strictly.
+\item If $b>T(R)$, put $h=b-T(R)$ and choose $b'=T(R)$,
+$s'_x=s_x-\delta h$. Every state's row implies $s_x\ge\delta h$.
+The adjusted point satisfies the same row inequalities. Its objective
+increases by $(\kappa\delta-1)h$.
+\end{itemize}
+For $\kappa\delta\ge1$, both operations preserve or improve $P$. For
+$\kappa\delta>1$, every maximizer therefore satisfies $|b|\le T(\norm{\vz})$.
+
+A clipped point with $r=\norm{\vz}$ has
+\[
+ P\le \norm{m}r+T(r)-\tfrac{\Gamma}{2}r^2.
+\]
+The right side tends to $-\infty$. Choose $R$ so large that all $r>R$
+give less than the feasible value $-G/\delta$ from page 1. For the remaining
+weights one can restrict to $|b|\le T(R)$. Projecting the weight onto the
+span of $m$ and the finitely many $d_{x,a}$ preserves $F$ and every row,
+and can only reduce the penalty. At each $(\vz,b)$ one may choose
+\[
+ s_x=\max\!\left(0,\max_a\{\ip{d_{x,a}}{\vz}+\delta b-g_{x,a}\}\right).
+\]
+These least feasible slacks maximize the objective for fixed $(\vz,b)$.
+They are continuous in $(\vz,b)$. The resulting continuous objective attains
+its maximum on the product of a closed finite-dimensional ball and a closed
+bounded interval. This proves attainment in the original program.
+
+\section*{The matching radius}
+Let $(\vz^*,b^*,s^*)$ solve (5), $C=\norm{\vz^*}$ and $B\ge|b^*|$.
+Every feasible point $q=(\vz,b,s)$ of (15) satisfies
+\[
+ F(q)=P(q)+\tfrac{\Gamma}{2}\norm{\vz}^2
+ \le P(\vz^*,b^*,s^*)+\tfrac{\Gamma}{2}C^2=F(\vz^*,b^*,s^*).
+\]
+Equality requires both $P(q)=\max P$ and $\norm{\vz}=C$. All maximizers
+of $P$ have the same weight: if two had different weights, their feasible
+midpoint would increase $P$ above their common value by
+$\Gamma\norm{\vz_1-\vz_2}^2/8$. Hence the maximizers of (15) are precisely
+the maximizers of (5) with $|b|\le B$, and
+\[
+ \boxed{\quad \max (15)=\max (5)+\tfrac{\Gamma}{2}C^2.\quad}
+\]
+
+\newpage
+\section*{When the optima differ}
+For $\kappa\delta>1$, choosing $B\ge T(C)$ retains the entire optimizer
+set. For $\kappa\delta=1$, choosing $B\ge|b^*|$ retains a common optimizer,
+while the ray on page 1 extends beyond every finite $B$. In either case,
+the two numerical values agree exactly when $C=0$.
+
+\lead{A nonzero optimal weight.}
+Take two absorbing states $x\in\{-1,1\}$ and one action. Let
+$g_x=\Phi(x)=x$, $\alpha=1/2$, $\nu_x=\pi_x=1/2$, $\kappa=6$, and
+$\Gamma=1$. Then $m=0$ and
+\[
+ F=b-3(s_{-1}+s_1),\qquad P=F-z^2/2.
+\]
+The row for $x=-1$ implies $s_{-1}\ge -z/2+b/2+1$, so
+$b\le z-2+2s_{-1}$. Nonnegative slacks give
+\[
+ F\le z-2,\qquad
+ P\le z-2-z^2/2=-\tfrac32-\tfrac12(z-1)^2.
+\]
+At $z=1$, $b=-1$, $s=0$, both rows are feasible and both bounds are
+attained. Thus (5) has value $-3/2$, while (15) with $C=1$, $B\ge1$
+has value $-1$. No other choice of radii can simultaneously preserve a
+maximizer and its numerical value, since every penalized maximizer has $z=1$.
+
+\section*{Full feature rank and equation (16)}
+Suppose $\dim\operatorname{span}\{\Phi(x):x\in\mathcal S\}=|\mathcal S|$.
+The feature vectors are linearly independent. Their Gram matrix
+$K_{xy}=\ip{\Phi(x)}{\Phi(y)}$ is invertible because
+$u^\top K u=\norm{\sum_x u_x\Phi(x)}^2>0$ for $u\ne0$.
+Given the optimal cost vector $J^*$, set
+\[
+ c=K^{-1}J^*,\qquad \widetilde{\mathbf z}=\sum_y c_y\Phi(y).
+\]
+Then $\ip{\Phi(x)}{\widetilde{\mathbf z}}=(Kc)_x=J^*(x)$ for every state.
+With $C_0=\norm{\widetilde{\mathbf z}}$, every $C\ge C_0$ and every $B\ge0$
+admit this exact fit with $b=0$. The infimum of the nonnegative sup-norm
+error in (16) is therefore zero. More generally it is nonincreasing in each
+radius because enlarging either radius includes all previous fits.
+For the penalty-selected radius $C(\Gamma)=\norm{\vz^*}$, the interpolation
+conclusion applies whenever that radius contains the interpolant. Full rank
+alone gives no such bound for a prescribed $\Gamma$.
+
+\medskip
+{\small\textbf{Source.} N.~Bhat, V.~F.~Farias, C.~C.~Moallemi and A.~T.~Zheng,
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=11}{\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
+August 29, 2022, equations (5), (15), (16), and footnote 5.\par
+\textbf{Formal proof.} \href{https://github.com/nikhilpb/kadp/blob/main/lean/Regularization.lean}{\texttt{lean/Regularization.lean}}.}
+\end{document}

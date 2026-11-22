@@ -1,0 +1,202 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[top=22mm,bottom=24mm,left=27mm,right=27mm]{geometry}
+\usepackage{amsmath,amssymb,xcolor}
+\definecolor{link}{HTML}{205973}
+\usepackage[hypertexnames=false,colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
+\hypersetup{pdftitle={Theorem 3. Uniform concentration for a fixed policy}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\raggedbottom
+\newcommand{\R}{\mathbb R}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Prob}{\mathbb P}
+\newcommand{\F}{\mathcal F}
+\newcommand{\Cbar}{\overline C}
+\newcommand{\resclass}{\overline{\mathcal F}_{\!\mathcal S,\mu}}
+\newcommand{\lead}[1]{\par\smallskip\noindent\textbf{#1}\enspace}
+\begin{document}
+{\LARGE\bfseries Theorem 3. Uniform concentration\\[2pt] for a fixed policy\par}
+\medskip
+How much can a sample underestimate the expected positive Bellman residual?
+Theorem~3 controls this error simultaneously for all admissible value
+functions. A value function may therefore be chosen after observing the
+sample. The policy and the distribution of the sampled states are fixed
+before the draw.
+
+\section*{The residual class and the guarantee}
+Let \(\mathcal S\) and \(\mathcal A\) be finite nonempty state and action
+sets, with cost \(g_{x,a}\), transition probabilities \(p(x,y,a)\), and
+discount \(0<\alpha<1\). For any policy \(\mu:\mathcal S\to\mathcal A\), write
+\[
+ P_\mu(x,y)=p(x,y,\mu(x)),\quad g_\mu(x)=g_{x,\mu(x)},\quad
+ T_\mu J=g_\mu+\alpha P_\mu J .
+\]
+For a feature map \(\Phi:\mathcal S\to\mathcal H\) into a real Hilbert space,
+write \(\widetilde J_{\mathbf z,b}(x)=\langle\Phi(x),\mathbf z\rangle+b\).
+For radii \(C,B\ge0\), define
+\[
+ \resclass=\bigl\{(\widetilde J_{\mathbf z,b}-T_\mu\widetilde J_{\mathbf z,b})_+
+                 :\ \|\mathbf z\|\le C,\ |b|\le B\bigr\},\qquad u_+=\max(u,0).
+\]
+Each member measures how far the fit exceeds the immediate cost plus
+the discounted expected continuation value under \(\mu\). Let \(X_1,\ldots,X_N\) be independent draws from any
+probability distribution \(\pi\) on \(\mathcal S\). Write
+\(P f=\sum_x\pi_x f(x)\), \(P_N f=N^{-1}\sum_{i=1}^N f(X_i)\), and set
+\[
+ \begin{aligned}
+ K&=\max_x\|\Phi(x)\|,\qquad \|g\|_\infty=\max_{x,a}|g_{x,a}|,\\
+ \Cbar&=4CK(1+\alpha)+4B(1-\alpha)+2\|g\|_\infty,\\
+ \Xi(C,B,K,\delta)&=\Cbar\bigl(1+\sqrt{2\ln(1/\delta)}\bigr).
+ \end{aligned}
+\]
+
+\textbf{Theorem 3.} Fix \(\epsilon>0\) and \(0<\delta<1\). For every integer
+\(N\ge1\) satisfying \(N\ge \Xi(C,B,K,\delta)^2/\epsilon^2\),
+\begin{equation}
+ \Prob\!\left\{\sup_{f\in\resclass}(P f-P_N f)\ge\epsilon\right\}\le\delta .
+ \tag{T3}\label{eq:theorem}
+\end{equation}
+In particular, equality at \(\epsilon\) is included in the failure event.
+Taking \(\mu\) optimal and \(\pi\) its discounted occupancy gives the
+uniform sampling estimate used in Theorems~1 and~2.
+
+\lead{A bound on one residual.}
+Define \(d_\mu(x)=\Phi(x)-\alpha\sum_yP_\mu(x,y)\Phi(y)\). The transition
+weights sum to one, so \(\|d_\mu(x)\|\le K(1+\alpha)\). For the residual
+\(f\) of \(\widetilde J_{\mathbf z,b}\) this gives
+\begin{equation}
+ \begin{aligned}
+ f(x)&=\bigl(\langle d_\mu(x),\mathbf z\rangle+(1-\alpha)b-g_\mu(x)\bigr)_+,\\
+ 0\le f(x)&\le CK(1+\alpha)+(1-\alpha)B+\|g\|_\infty\le \Cbar/2 .
+ \end{aligned}
+ \tag{1}\label{eq:residual}
+\end{equation}
+
+\newpage
+\section*{A one-sided bound for any bounded class}
+For a nonempty class \(\F\) of real functions on \(\mathcal S\), let
+\(\sigma_1,\ldots,\sigma_N\) be independent uniform signs in \(\{-1,1\}\),
+independent of the states. The paper's Rademacher complexity is
+\[
+ \widehat R_N(\F)=\E_\sigma\!\left[\sup_{f\in\F}\frac{2}{N}
+          \sum_i\sigma_i f(X_i)\right],\qquad
+ R_N(\F)=\E_X\widehat R_N(\F).
+\]
+The signs are averaged with the sample held fixed in \(\widehat R_N\).
+
+\textbf{Lemma 1 (positive envelope).} Let \(N\ge1\), \(0<\delta<1\), and
+suppose \(|f(x)|\le B\) for every \(f,x\). Here \(B>0\) is any uniform bound on the class. Then
+\begin{equation}
+ Z=\sup_{f\in\F}(P f-P_N f),\qquad
+ \Prob\!\left\{Z\ge R_N(\F)+B\sqrt{\frac{2\ln(1/\delta)}{N}}\right\}\le\delta .
+ \tag{2}\label{eq:lemma}
+\end{equation}
+The positive envelope matters for this closed event. With \(B=0\) and
+\(\F=\{0\}\), \(Z=R_N(\F)=0\) on every sample. The probability on the
+left is then exactly one for every \(0<\delta<1\).
+
+\lead{Arbitrary classes.}
+Regard \(\F\) as a subset of \(\R^{\mathcal S}\) with its pointwise topology.
+A countable base of rational rectangles gives a countable dense subclass
+by choosing one member of \(\F\) from each basic open set it meets.
+Evaluation and finite sums are continuous, so this subclass gives the
+same suprema in \(Z\) and \(\widehat R_N\), including when no maximum exists.
+On countably infinite discrete state spaces the same argument uses basic
+sets restricting finitely many coordinates. There \(P f\) is continuous
+on the bounded class by dominated convergence. The suprema are therefore
+measurable for both finite and countable discrete state spaces.
+
+\lead{Symmetrization.}
+Draw an independent copy \(X'_1,\ldots,X'_N\) and write \(P'_N\) for
+its empirical mean. Since \(\E_{X'}P'_N f=P f\), moving the supremum
+inside this expectation gives \(\E Z\le\E\sup_f(P'_N f-P_N f)\).
+Swapping the two draws of each pair independently preserves their joint law.
+Define \(A(f,X,\sigma)=N^{-1}\sum_i\sigma_i f(X_i)\). The swap gives
+\[
+ \E Z\le\E\sup_f\bigl(A(f,X',\sigma)+ A(f,X,-\sigma)\bigr)
+ \le \E\sup_f A(f,X',\sigma)+\E\sup_f A(f,X,-\sigma).
+\]
+Each term equals \(R_N(\F)/2\) because \(-\sigma\) has the same law as
+\(\sigma\). This accounts for the factor \(2/N\).
+
+\lead{Bounded differences.}
+Replacing one draw changes every \(P_N f\), hence \(Z\), by at most
+\(c=2B/N\). Reveal the draws successively. The conditional-mean increments
+of \(Z\) are centered. Each has conditional range of width at most \(c\)
+because averaging over future draws preserves the coordinate bound.
+The second derivative of its log moment-generating function is a tilted
+variance, bounded by the squared half-width \(c^2/4\). Integrating twice
+and iterating conditional expectations yields
+\[
+ \E\exp(\lambda(Z-\E Z))\le\exp(N\lambda^2c^2/8).
+\]
+Markov's inequality at \(\lambda=4t/(Nc^2)\) gives
+\(\Prob\{Z-\E Z\ge t\}\le\exp(-2t^2/(Nc^2))\) for \(t>0\).
+Taking \(t=B\sqrt{2\ln(1/\delta)/N}\) and using \(\E Z\le R_N(\F)\)
+proves \eqref{eq:lemma}.
+
+\newpage
+\section*{The complexity of a fixed-policy residual}
+Fix the sample and abbreviate \(d_i=d_\mu(X_i)\). By \eqref{eq:residual},
+each residual applies the 1-Lipschitz map
+\(\varphi_i(u)=(u-g_\mu(X_i))_+\) to the affine score
+\(u_i=\langle d_i,\mathbf z\rangle+(1-\alpha)b\).
+For this one-sided complexity, such coordinatewise transformations can
+only decrease the sign average.
+
+To see this, condition on all signs except \(\sigma_i\). Index the candidates
+by \(j\), write \(u_j\) for their scores at coordinate \(i\), and \(a_j\)
+for their signed sums over the other coordinates. Twice the conditional
+expectation of the unnormalized supremum is
+\[
+ \sup_{j,k}\{a_j+a_k+\varphi_i(u_j)-\varphi_i(u_k)\}
+ \le \sup_{j,k}\{a_j+a_k+|u_j-u_k|\}.
+\]
+Exchanging \(j,k\) leaves \(a_j+a_k\) unchanged, so the last supremum equals
+\(\sup_{j,k}(a_j+a_k+u_j-u_k)\). This is twice the conditional expectation
+for the untransformed coordinate. Repeating for each \(i\) removes all
+\(\varphi_i\) while preserving the inequality.
+
+\lead{Feature weights and intercept.}
+For fixed signs, Cauchy--Schwarz bounds the linear supremum by
+\(C\|\sum_i\sigma_i d_i\|\). The corresponding intercept bound is
+\((1-\alpha)B|\sum_i\sigma_i|\). Independence and zero means cancel the
+cross terms in both second moments, giving
+\[
+ \E_\sigma\Big\|\sum_i\sigma_i d_i\Big\|^2=\sum_i\|d_i\|^2,
+ \qquad \E_\sigma\Big|\sum_i\sigma_i\Big|^2=N .
+\]
+Cauchy--Schwarz and \(\|d_i\|\le K(1+\alpha)\) thus give, on every sample,
+\begin{equation}
+ \widehat R_N(\resclass)
+ \le \frac{2}{\sqrt N}\bigl(CK(1+\alpha)+(1-\alpha)B\bigr)
+ \le \frac{\Cbar}{\sqrt N}.
+ \tag{3}\label{eq:complexity}
+\end{equation}
+Averaging proves the same bound for \(R_N\). The cost enters the pointwise
+bound \eqref{eq:residual} through \(\|g\|_\infty\). The translation by \(-g_\mu(X_i)\)
+preserves the Lipschitz constant.
+
+\lead{The stated sample size.}
+If \(\Cbar>0\), use \eqref{eq:residual} to set the generic bound of Lemma~1 to
+\(\Cbar/2\). The intercept radius \(B\) still enters through \(\Cbar\).
+The final display on page~30 of the manuscript uses the unbarred linear
+class \(\mathcal F_{\mathcal S,\mu}\) and the symbol \(\overline B\).
+Applying Lemma~1 to \(\resclass\) with its envelope \(\Cbar/2\) gives,
+by \eqref{eq:complexity} and the sample-size assumption,
+\[
+ R_N(\resclass)+\tfrac{\Cbar}{2}\sqrt{2\ln(1/\delta)/N}
+ \le \frac{\Cbar}{\sqrt N}\bigl(1+\tfrac12\sqrt{2\ln(1/\delta)}\bigr)
+ \le \frac{\Xi(C,B,K,\delta)}{\sqrt N}\le\epsilon .
+\]
+Thus \(Z\ge\epsilon\) implies the event in \eqref{eq:lemma}, even at
+equality. If \(\Cbar=0\), \eqref{eq:residual} forces every residual to vanish,
+and \(\Prob\{Z\ge\epsilon\}=0\) since \(\epsilon>0\).
+This proves \eqref{eq:theorem} with the printed threshold and confidence.
+
+{\small\textbf{Sources.}
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=29}{Bhat, Farias, Moallemi and Zheng, Appendix~B.1 and Appendix~C}.
+\href{https://github.com/nikhilpb/kadp/blob/main/lean/Theorem3.lean}{Formal Theorem~3},
+\href{https://github.com/nikhilpb/kadp/blob/main/lean/OneSidedConcentration.lean}{Lemma~1 and the zero-envelope example}, and
+\href{https://github.com/nikhilpb/kadp/blob/main/lean/ResidualComplexity.lean}{residual complexity}.}
+\end{document}

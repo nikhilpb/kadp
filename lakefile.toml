@@ -20,3 +20,33 @@ rev = "v4.32.0"
 
 [[lean_lib]]
 name = "Kadp"
+srcDir = "lean"
+globs = [
+  "ActiveSet",
+  "Allocation",
+  "Approximation",
+  "BellmanLP",
+  "Duality",
+  "Exchange",
+  "Idealized",
+  "Kadp",
+  "KernelPolicy",
+  "Occupancy",
+  "Offset",
+  "OneSidedConcentration",
+  "PairSelection",
+  "PopulationComparison",
+  "PrimalAttainment",
+  "Regularization",
+  "ResidualComplexity",
+  "SampledRSALP",
+  "SamplingLaw",
+  "SamplingCoupling",
+  "Theorem1",
+  "Theorem2",
+  "Theorem3",
+  "UniformDeviation",
+  "Weighted",
+  "WeightedSampling",
+  "Examples.+",
+]
