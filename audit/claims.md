@@ -59,6 +59,21 @@ For a realized finite sample and a real feature kernel, (12) and (13) are the Gr
 
 **Neighborhood correction.** Section 2.3 includes the current state in each neighborhood. Section 2.5 describes only states reachable with positive probability. In the two-state witness, the sampled state has no self-transition under action $B$. Omitting the current state changes $Q(s,B,s,B)$ from $0$ to $1$ and $R(s,B)$ from $1$ to $5/2$. The formal witness is `successors_only_changes_coefficients`. [Checked example](../Kadp/Examples/KernelPolicy.lean) · [Neighborhood definition](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=7) · [Algorithm summary](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=10)
 
+## Discounted occupancy and the signed residual
+
+**Equation (17) holds as printed.** Let $P_\mu$ be the row-stochastic transition matrix of a fixed policy in a finite MDP, $0<\alpha<1$, and $\nu$ any initial probability vector. The two expressions for $\pi_{\mu,\nu}$ agree, their entries are nonnegative and sum to one, and the balance equation has a unique real row solution. For every candidate $J$, the signed initial error is $\nu^\top(J-J_\mu)=\pi_{\mu,\nu}^\top(J-T_\mu J)/(1-\alpha)$. Taking an optimal policy recovers the paper’s sampling law. [Standalone proof](../proofs/discounted-occupancy.pdf) · [Lean module](../Kadp/Occupancy.lean)
+
+| Claim | Lean declarations in `Kadp.Occupancy` |
+| --- | --- |
+| Inverse formula and convergence of the discounted visit series | `discountedOccupancy`, `hasSum_occupancy` |
+| Probability, balance and uniqueness | `occupancy_isDistribution`, `occupancy_balance`, `occupancy_unique` |
+| Reward-to-cost translation, fixed point and uniqueness | `ofCosts`, `costBellman_eq_neg_reward`, `costBellman_policyCost`, `policyCost_unique` |
+| Signed initial error and occupancy-weighted Bellman residual | `residual_identity` |
+
+**Proof reuse.** Robert Kirkby’s LeanEconomics chapter (Apache-2.0, commit `9d4783f3fb282444f8f3a91c4e6439293dd4bacc`) declares Lean 4.34.0 and mathlib `5ed2965256430c3649e86755f9576b54eca72435`. Its unmodified `Basics` and `MDP` modules built and replayed on this project's Lean 4.32.0 and mathlib `81a5d257c8e410db227a6665ed08f64fea08e997`. The proof reuses `MDP.vσ_eq_inv` and `MDP.vσ_eq_tsum` with a state indicator to recover each resolvent column, and `MDP.isUnit_one_sub_smul_Pσ` to prove uniqueness. The cost adapter gives every action to every state and sets the reward to the negative cost. [Pinned upstream source](https://github.com/LeanEconomics/DynamicProgramming/blob/9d4783f3fb282444f8f3a91c4e6439293dd4bacc/FiniteStates/MarkovDecisionProcesses/MarkovDecisionProcesses/MDP.lean)
+
+**Two-state check.** Starting at $s$, the occupancy row is $(2/3,1/3)$. The residuals $3/4$ and $-1$ give a weighted mean of $1/6$. With $\alpha=1/2$, the expected initial error is $1/3$. [Lean example](../Kadp/Examples/Occupancy.lean)
+
 ## Unnumbered claims to audit
 
 | Location | Claim and assumptions to check | Status |
@@ -66,7 +81,8 @@ For a realized finite sample and a real feature kernel, (12) and (13) are the Gr
 | §2.1 and (1), p. 5 | The optimal policy and Bellman LP represent the same value under positive relevance weights. Resolve the policy's printed maximization convention against cost minimization. | Open |
 | §2.3–2.5, pp. 7–10 | (7) gives a positive semidefinite Gram matrix. Equations (11)–(14) recover the sampled coefficients and policy from the multiplier. | **Proved as printed** in the finite-state feature model with the §2.3 neighborhood. The §2.5 prose needs the correction above. |
 | §3.1, p. 11 | For each $\Gamma>0$ some $C\ge0$ gives (5) and (15) the same optimal solutions and values for sufficiently large $B$. Full feature rank gives zero best approximation error for a sufficiently large radius. | Open |
-| §3.2, pp. 12–13 | (17) defines a probability distribution. The discussion after (18) gives a sufficient size of $B$ for the offset constraint to be nonbinding. | Open |
+| §3.2, p. 12 | The inverse and series in (17) define the same probability distribution. | **Proved as printed.** See the discounted occupancy result above. |
+| §3.2, p. 13 | The discussion after (18) gives a sufficient size of $B$ for the offset constraint to be nonbinding. | Open |
 | §4.1–4.2, pp. 15–18 | The pair selection rule solves (20), and absence of a feasible improving pair certifies optimality. | Open |
 | Appendix B.2, pp. 31–32 | Feasibility of the comparator and the residual inequalities in (26) yield the weighted error bound. Check the sign of the comparator slack. | Open |
 | Appendix B.3, pp. 32–33 | The empirical total-variation term controls the change of sampling law. The likelihood-ratio version also requires a coupling and a quantified high-probability statement. | Open |

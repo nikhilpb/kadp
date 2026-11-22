@@ -1,0 +1,167 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[top=22mm,bottom=24mm,left=27mm,right=27mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\definecolor{link}{HTML}{205973}
+\usepackage[colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
+\hypersetup{pdftitle={Discounted state occupancy and the Bellman residual}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\raggedbottom
+\newcommand{\R}{\mathbb R}
+\newcommand{\lead}[1]{\par\smallskip\noindent\textbf{#1}\enspace}
+
+\begin{document}
+{\LARGE\bfseries Discounted state occupancy\\[2pt] and the Bellman residual\par}
+\medskip
+For a fixed policy, the error in an approximate cost-to-go can be recovered
+exactly from its one-step errors. The weight on each state is the fraction
+of discounted time the policy is expected to spend there. This distribution has a
+balance equation that determines it uniquely.
+
+\section*{A fixed policy and its one-step error}
+Let \(\mathcal S\) and \(\mathcal A\) be finite, nonempty sets of states and
+actions. At state \(x\), action \(a\) costs \(g_{x,a}\in\R\) and moves to
+state \(y\) with probability \(p(x,y,a)\). Fix a policy \(\mu\) that chooses
+one action \(\mu(x)\) in each state. Its cost vector and transition matrix are
+\[
+  g_\mu(x)=g_{x,\mu(x)},\qquad
+  P_\mu(x,y)=p(x,y,\mu(x)),\qquad \sum_y P_\mu(x,y)=1.
+\]
+Throughout, \(\alpha\in(0,1)\) is the discount factor. Values are column
+vectors. An initial distribution \(\nu\) has \(\nu_x\ge0\) and
+\(\sum_x\nu_x=1\). We write \(\nu^\top\) for its row vector, so
+\(\nu^\top f=\sum_x\nu_x f(x)\) is the expected value of \(f\) at the start.
+
+Starting from \(x\), the expected cost at time \(t\) is \((P_\mu^t g_\mu)(x)\),
+where \(P_\mu^0=I\), the identity matrix. For a proposed cost-to-go \(J\),
+the true discounted cost \(J_\mu\) and the one-step update \(T_\mu J\) are
+\[
+ J_\mu=\sum_{t=0}^{\infty}\alpha^t P_\mu^t g_\mu,
+ \qquad T_\mu J=g_\mu+\alpha P_\mu J .
+\]
+The Bellman residual \(J-T_\mu J\) is positive at a state when \(J\)
+exceeds the cost of taking one policy step and then using \(J\) thereafter.
+
+\section*{The occupancy and residual identities}
+\textbf{Proposition.} For every \(\mu\) and \(\nu\) as above, the row vector
+\begin{equation}
+ \pi_{\mu,\nu}^{\top}
+ =(1-\alpha)\sum_{t=0}^{\infty}\alpha^t\nu^\top P_\mu^t
+ =(1-\alpha)\nu^\top(I-\alpha P_\mu)^{-1}
+ \label{eq:occ}
+\end{equation}
+is a probability distribution. It is the unique real row vector satisfying
+\begin{equation}
+ \pi_{\mu,\nu}^{\top}=(1-\alpha)\nu^\top+\alpha\pi_{\mu,\nu}^{\top}P_\mu .
+ \label{eq:balance}
+\end{equation}
+For every \(J\in\R^{\mathcal S}\), the expected initial value error satisfies
+\begin{equation}
+ \nu^\top(J-J_\mu)
+   =\frac{1}{1-\alpha}\,\pi_{\mu,\nu}^{\top}(J-T_\mu J).
+ \label{eq:residual}
+\end{equation}
+
+\newpage
+\section*{Proof}
+\lead{The distribution of discounted visits.}
+The row vector \(\nu^\top P_\mu^t\) is the state distribution at time \(t\).
+Indeed, multiplying a probability row by \(P_\mu\) preserves
+nonnegativity and total mass. The coefficients \((1-\alpha)\alpha^t\)
+are nonnegative and sum to one. Thus their mixture in \eqref{eq:occ}
+converges coordinatewise and has total mass one. A state with zero initial
+mass can have positive occupancy if the policy can reach it later.
+
+\lead{The inverse and the balance equation.}
+Every entry of \(P_\mu^t\) lies between zero and one, since each row is
+a probability distribution. The matrix series \(\sum_{t\ge0}\alpha^tP_\mu^t\)
+therefore converges absolutely in each entry. For the partial sum
+\(D_n=\sum_{t=0}^{n}\alpha^tP_\mu^t\), multiplication on either side gives
+\[
+  (I-\alpha P_\mu)D_n
+      =D_n(I-\alpha P_\mu)=I-\alpha^{n+1}P_\mu^{n+1}.
+\]
+The last term on the right tends to zero entrywise. There are only finitely
+many states, so multiplication by \(I-\alpha P_\mu\) commutes with the
+limit. The sum is consequently its two-sided inverse. This proves the
+second formula in \eqref{eq:occ}.
+
+Multiplying \eqref{eq:occ} on the right by \(I-\alpha P_\mu\) gives
+\[
+   \pi_{\mu,\nu}^\top(I-\alpha P_\mu)=(1-\alpha)\nu^\top.
+\]
+Rearranging gives \eqref{eq:balance}. Conversely, any real row vector
+satisfying that balance equation must give the same product with
+\(I-\alpha P_\mu\). Multiplication by the inverse determines the row
+uniquely. In \eqref{eq:balance}, the first term accounts for time zero
+and the second for visits after one or more transitions.
+
+\lead{From a one-step error to the initial error.}
+The series for \(J_\mu\) gives \(J_\mu=(I-\alpha P_\mu)^{-1}g_\mu\).
+Hence \(J_\mu\) is the unique solution of \(J_\mu=g_\mu+\alpha P_\mu J_\mu\).
+Subtracting this equality from the definition of the residual gives
+\[
+ (I-\alpha P_\mu)(J-J_\mu)
+     =J-\alpha P_\mu J-g_\mu=J-T_\mu J .
+\]
+Multiply on the left by \(\pi_{\mu,\nu}^\top\) and use the balance equation.
+The left side becomes \((1-\alpha)\nu^\top(J-J_\mu)\). Division by
+\(1-\alpha>0\) gives \eqref{eq:residual}. \hfill\(\square\)
+
+\newpage
+\section*{A two-state example}
+The states are \(s,t\), and the initial state is \(s\). From either state,
+action \(A\) costs \(1\) and moves to \(s\) or \(t\) with equal probability.
+Action \(B\) costs \(2\) and moves to \(t\) with certainty. The policy
+takes \(A\) at \(s\) and \(B\) at \(t\). In state order \(s,t\),
+\[
+ P_\mu=\begin{pmatrix}1/2&1/2\\0&1\end{pmatrix},\qquad
+ g_\mu=\begin{pmatrix}1\\2\end{pmatrix},\qquad
+ \nu^\top=(1,0),\qquad \alpha=\tfrac12 .
+\]
+Writing \(u=\pi_{\mu,\nu}(s)\), the first coordinate of
+\eqref{eq:balance} is \(u=1/2+u/4\). Thus the occupancy is
+\((2/3,1/3)\). State \(t\) accounts for a third of discounted time even
+though the initial distribution gives it zero mass.
+
+At \(t\), the policy pays \(2\) forever, giving \(J_\mu(t)=4\). At \(s\),
+the Bellman equation gives
+\(J_\mu(s)=1+\tfrac14 J_\mu(s)+\tfrac14 J_\mu(t)\), so \(J_\mu(s)=8/3\).
+Take the candidate \(J(s)=3,\ J(t)=2\). Its one-step predictions and
+errors are
+\[
+ \begin{array}{c@{\qquad}r@{\quad}r@{\quad}r@{\quad}r}
+   \text{State} & J_\mu & J & T_\mu J & J-T_\mu J\\ \hline
+   s & 8/3 & 3 & 9/4 & \phantom{-}3/4\\
+   t & 4   & 2 & 3   & -1
+ \end{array}
+\]
+The residuals at the two states have opposite signs. Their contributions
+partly cancel when averaged over discounted visits,
+\[
+ \pi_{\mu,\nu}^\top(J-T_\mu J)=\frac23\cdot\frac34+\frac13\cdot(-1)=\frac16 .
+\]
+Dividing by \(1-\alpha=1/2\) gives an initial error of \(1/3\). Direct
+evaluation at the starting state gives the same answer,
+\(J(s)-J_\mu(s)=3-8/3=1/3\).
+
+\section*{Relation to the original result}
+Equation (17) of Bhat, Farias, Moallemi and Zheng defines the sampling law
+for an optimal policy \(\mu^*\). Taking \(\mu=\mu^*\) in \eqref{eq:occ}
+gives their formula as printed. The proof applies to any fixed policy and
+allows zeros in the initial distribution. Equation \eqref{eq:residual}
+makes explicit how this sampling law weights signed one-step errors.
+
+\smallskip
+{\small
+\textbf{Source.} N.~Bhat, V.~F.~Farias, C.~C.~Moallemi and A.~T.~Zheng,
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=12}{\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
+August 29, 2022, \S3.2.\par
+\textbf{Formal proof.}
+\href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Occupancy.lean}{Lean occupancy and residual identities}
+and \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Examples/Occupancy.lean}{two-state example}.
+The series proof applies
+\href{https://github.com/LeanEconomics/DynamicProgramming/blob/9d4783f3fb282444f8f3a91c4e6439293dd4bacc/FiniteStates/MarkovDecisionProcesses/MarkovDecisionProcesses/MDP.lean}{Robert Kirkby's policy-evaluation theorems}
+to each state's indicator function.}
+\end{document}
