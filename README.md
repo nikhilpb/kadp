@@ -8,6 +8,8 @@ The self-contained notes in `proofs/` group supporting lemmas with the results t
 
 **Theorem 1. Approximation guarantee for the sampled value function.** The probability bound (19) holds simultaneously for all optimizers of (18). At the same sample size, the proof gives confidence $1-\delta$ and additive error $2\epsilon/(1-\alpha)$. The note proves existence, explains why one concentration event suffices, and gives a one-state example of the comparator slack correction. [PDF](proofs/theorem-1.pdf) · [LaTeX](proofs/theorem-1.tex) · [Lean theorem](Kadp/Theorem1.lean) · [Slack example](Kadp/Examples/Theorem1.lean)
 
+**Theorem 2. A weighted approximation guarantee.** Equation (25) holds at the published confidence and sample size, including when no weight attains its infimum. The proof selects a comparator before sampling. A two-state example shows how a weight reduces the bound for the same fitted value function. [PDF](proofs/theorem-2.pdf) · [LaTeX](proofs/theorem-2.tex) · [Lean theorem](Kadp/Theorem2.lean) · [Checked example](Kadp/Examples/Theorem2.lean)
+
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 
 ```sh
@@ -28,7 +30,8 @@ To inspect the assumptions behind the main results, run the command below. Lean 
 
 ```sh
 printf '%s\n' 'import Kadp' '#print axioms Kadp.SampledRSALP.strongDuality' '#print axioms Kadp.SampledRSALP.kernelPolicy_of_optima' '#print axioms Kadp.Occupancy.hasSum_occupancy' '#print axioms Kadp.Occupancy.residual_identity' \
-  '#print axioms Kadp.Theorem1.theorem1' '#print axioms Kadp.Theorem1.strengthened' | lake env lean --stdin
+  '#print axioms Kadp.Theorem1.theorem1' '#print axioms Kadp.Theorem1.strengthened' \
+  '#print axioms Kadp.Theorem2.theorem2' '#print axioms Kadp.Examples.Theorem2.infimum_not_attained' | lake env lean --stdin
 ```
 
 The approximation proof reuses the Bellman contraction and optimal-policy results from LeanEconomics and the Hilbert predictor, contraction, and concentration results from FoML. The manifest fixes both revisions. [LeanEconomics](https://github.com/LeanEconomics/DynamicProgramming/tree/9d4783f3fb282444f8f3a91c4e6439293dd4bacc/FiniteStates/MarkovDecisionProcesses) · [FoML](https://github.com/auto-res/lean-rademacher/tree/db9f18714b0b9934553c37db1b41250462dc7faa)
@@ -41,4 +44,5 @@ Each note builds independently from the repository root with Tectonic.
 tectonic proofs/proposition-1.tex
 tectonic proofs/kernel-policy.tex
 tectonic proofs/theorem-1.tex
+tectonic proofs/theorem-2.tex
 ```

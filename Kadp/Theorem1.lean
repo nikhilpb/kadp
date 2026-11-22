@@ -63,7 +63,7 @@ noncomputable def sampleLaw (μ : S → A) (ν : S → ℝ) (hν : IsDistributio
   Measure.pi (fun _ : Fin N => (samplingPMF _ (occupancy_isDistribution M μ hν)).toMeasure)
 
 omit [DecidableEq A] in
-private theorem uniform_policy_residual (μ : S → A) (ν : S → ℝ) (hν : IsDistribution ν)
+theorem uniform_policy_residual (μ : S → A) (ν : S → ℝ) (hν : IsDistribution ν)
     (hC : 0 ≤ C) (hB : 0 ≤ B) {ε δ : ℝ} (hε : 0 < ε) (hδ : 0 < δ) (hδ₁ : δ < 1)
     {N : ℕ} (hN : 0 < N)
     (hsize : (envelope Φ M C B * (1 + Real.sqrt (2 * Real.log (1 / δ)))) ^ 2 / ε ^ 2 ≤ N) :

@@ -74,15 +74,18 @@ theorem sampleObjective_le_of_maximizes {N : ℕ} (ν : S → ℝ) (X : Fin N �
   (hmax (fun i => bellmanResidual M V (X i)) ((slackFeasible_iff ..).2 fun _ => le_rfl)).trans
     (slackObjective_le_sampleObjective M ν X J s hs)
 
-theorem continuous_sampleObjective {N : ℕ} (ν : S → ℝ) (X : Fin N → S) :
-    Continuous (sampleObjective M ν X) := by
+theorem continuous_bellmanResidual (x : S) :
+    Continuous (fun J => bellmanResidual M J x) := by
   have hLip : LipschitzWith ⟨M.β, M.β_pos.le⟩ M.T :=
     LipschitzWith.of_dist_le_mul fun v w => by
       simp only [dist_eq_norm]
       exact M.isContractionOn_T.norm_sub_le v (Set.mem_univ _) w (Set.mem_univ _)
   have hT : Continuous (optimalBellman M) := (hLip.continuous.comp continuous_neg).neg
-  have hres (x : S) : Continuous (fun J => bellmanResidual M J x) :=
-    ((continuous_apply x).sub ((continuous_apply x).comp hT)).max continuous_const
+  exact ((continuous_apply x).sub ((continuous_apply x).comp hT)).max continuous_const
+
+theorem continuous_sampleObjective {N : ℕ} (ν : S → ℝ) (X : Fin N → S) :
+    Continuous (sampleObjective M ν X) := by
+  have hres := continuous_bellmanResidual M
   unfold sampleObjective sampleMean dotProduct
   fun_prop
 
@@ -191,6 +194,27 @@ private theorem weightedL1_split (ν U J : S → ℝ) :
   · rw [abs_of_nonpos (sub_nonpos.mpr hx), max_eq_left (sub_nonneg.mpr hx)]
     ring
 
+/-- The common part of (19) and (25). Sample optimality pays for the comparator's
+empirical slack, and the single fitted-policy deviation costs ε. -/
+theorem error_le_sample_comparator (μ : S → A) (ν : S → ℝ) {N : ℕ} (X : Fin N → S)
+    (hμ : M.IsOptimal μ) (hν : IsDistribution ν) (J V : S → ℝ) (ε : ℝ)
+    (hfit : sampleObjective M ν X V ≤ sampleObjective M ν X J)
+    (hdev : discountedOccupancy M μ ν ⬝ᵥ policyResidual M μ J ≤
+      sampleMean X (policyResidual M μ J) + ε) :
+    weightedL1 ν (optimalCost M - J) ≤ ν ⬝ᵥ (optimalCost M - V) +
+      2 / (1 - M.β) * (sampleMean X (bellmanResidual M V) + ε) := by
+  have hβ : 0 < 1 - M.β := sub_pos.mpr M.β_lt_one
+  have hcost : policyCost M μ = optimalCost M := congrArg Neg.neg hμ.2
+  have hpos := positive_error_le_occupancy M μ ν J hν
+  rw [hcost] at hpos
+  have hgen := hdev.trans (add_le_add (sampleMean_mono X (policyResidual_le_bellmanResidual M μ hμ.1 J)) le_rfl)
+  rw [weightedL1_split, dotProduct_sub]
+  unfold sampleObjective at hfit
+  have hfit' := mul_le_mul_of_nonneg_right hfit hβ.le
+  have hpos' := (le_div_iff₀ hβ).mp hpos
+  field_simp [hβ.ne'] at hfit' ⊢
+  nlinarith only [hfit', hpos', hgen]
+
 /-- The pathwise oracle inequality behind (19). Only the fitted function's
 fixed-policy residual needs a one-sided generalization estimate. Every comparator
 is controlled pointwise, giving the stronger additive term `2 ε / (1 - β)`. -/
@@ -202,10 +226,6 @@ theorem oracle_bound (μ : S → A) (ν : S → ℝ) {N : ℕ} (X : Fin N → S)
     weightedL1 ν (optimalCost M - J) ≤
       (3 + M.β) / (1 - M.β) * ‖optimalCost M - V‖ + 2 * ε / (1 - M.β) := by
   have hβ : 0 < 1 - M.β := sub_pos.mpr M.β_lt_one
-  have hcost : policyCost M μ = optimalCost M := congrArg Neg.neg hμ.2
-  have hpos := positive_error_le_occupancy M μ ν J hν
-  rw [hcost] at hpos
-  have hgen := hdev.trans (add_le_add (sampleMean_mono X (policyResidual_le_bellmanResidual M μ hμ.1 J)) le_rfl)
   have hslack := sampleMean_le_const X hN (bellmanResidual_le M V)
   have hval : ν ⬝ᵥ optimalCost M - ν ⬝ᵥ V ≤ ‖optimalCost M - V‖ := by
     rw [← dotProduct_sub]
@@ -216,12 +236,11 @@ theorem oracle_bound (μ : S → A) (ν : S → ℝ) {N : ℕ} (X : Fin N → S)
           rw [Real.norm_eq_abs] at hx
           exact (le_abs_self _).trans hx
       _ = ‖optimalCost M - V‖ := by rw [dotProduct, ← Finset.sum_mul, hν.sum_eq_one, one_mul]
-  rw [weightedL1_split]
-  unfold sampleObjective at hfit
-  have hfit' := (mul_le_mul_of_nonneg_right hfit hβ.le)
-  have hpos' := (le_div_iff₀ hβ).mp hpos
-  have hval' := mul_le_mul_of_nonneg_right hval hβ.le
-  field_simp [hβ.ne'] at hfit' ⊢
-  nlinarith only [hfit', hpos', hval', hgen, hslack]
+  refine (error_le_sample_comparator M μ ν X hμ hν J V ε hfit hdev).trans ?_
+  rw [dotProduct_sub]
+  calc
+    _ ≤ ‖optimalCost M - V‖ + 2 / (1 - M.β) * ((1 + M.β) * ‖optimalCost M - V‖ + ε) :=
+      add_le_add hval (mul_le_mul_of_nonneg_left (add_le_add hslack le_rfl) (by positivity))
+    _ = _ := by field_simp [hβ.ne']; ring
 
 end Kadp.Approximation

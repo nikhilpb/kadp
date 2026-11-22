@@ -8,3 +8,5 @@ import Kadp.Occupancy
 import Kadp.Examples.Occupancy
 import Kadp.Theorem1
 import Kadp.Examples.Theorem1
+import Kadp.Theorem2
+import Kadp.Examples.Theorem2
