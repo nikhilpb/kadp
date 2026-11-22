@@ -4,6 +4,8 @@ Each proof has its own self-contained LaTeX source and PDF in `proofs/`, with a 
 
 **Strong duality for sampled value-function approximation.** The proof recovers a primal optimizer from any dual minimizer, works through an example at the penalty threshold, and explains the corrections to Proposition 1. [PDF](proofs/proposition-1.pdf) · [LaTeX source](proofs/proposition-1.tex) · [Lean theorem](Kadp/PrimalAttainment.lean)
 
+**Kernel evaluation and the greedy policy.** The kernel program recovers the fitted value up to its intercept and gives every greedy action, including ties. A two-state example shows why the current state belongs in the neighborhood used to compute the coefficients. [PDF](proofs/kernel-policy.pdf) · [LaTeX source](proofs/kernel-policy.tex) · [Lean theorem](Kadp/KernelPolicy.lean) · [Checked example](Kadp/Examples/KernelPolicy.lean)
+
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 
 ```sh
@@ -20,12 +22,17 @@ lake build
 
 After editing a proof, run `lake build` again. To replay all project declarations through Lean's kernel, run `lake env leanchecker --verbose Kadp`.
 
-To inspect the assumptions behind the replacement theorem, run the command below. Lean reports `propext`, `Classical.choice`, and `Quot.sound`.
+To inspect the assumptions behind the two main theorems, run the command below. Lean reports `propext`, `Classical.choice`, and `Quot.sound`.
 
 ```sh
-printf '%s\n' 'import Kadp' '#print axioms Kadp.SampledRSALP.strongDuality' | lake env lean --stdin
+printf '%s\n' 'import Kadp' '#print axioms Kadp.SampledRSALP.strongDuality' '#print axioms Kadp.SampledRSALP.kernelPolicy_of_optima' | lake env lean --stdin
 ```
 
 The [claim index](audit/claims.md) maps the two counterexamples, the corrected proposition, and the open claims to their evidence. The [plan](PLAN.md) covers the remaining work.
 
-To rebuild the strong-duality note from the repository root, run `tectonic proofs/proposition-1.tex`.
+Each note builds independently from the repository root with Tectonic.
+
+```sh
+tectonic proofs/proposition-1.tex
+tectonic proofs/kernel-policy.tex
+```

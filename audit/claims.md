@@ -45,14 +45,26 @@ Both instances use one state, action and draw, unit transition and distribution 
 | Construct a feasible intercept and slacks for every minimizing multiplier | `primal_attains_of_dual_minimizer` in [PrimalAttainment](../Kadp/PrimalAttainment.lean) |
 | Apply the result directly to a minimizer of the printed QP (9) | `dualObjective_le_iff`, `primal_attains_of_printed_dual_minimizer` in [PrimalAttainment](../Kadp/PrimalAttainment.lean) |
 
-**Downstream effects.** Positive affine normalization preserves the optimizer, the improving directions and the stopping criterion for the QP of §4. In §2.5, dropping the additive constant is valid for computing a policy. Use (10) and the coefficients of (7)–(8) as the reference when checking the kernel formulas (11)–(14). The experiment on p. 20 uses $\kappa=2/(1-\alpha)$, which clears the threshold. The approximation theorem uses the distinct program (18) and still needs its own proof audit. [Algorithm](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=10) · [Approximation guarantee](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=12) · [Experiment](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=20)
+**Downstream effects.** Positive affine normalization preserves the optimizer, the improving directions and the stopping criterion for the QP of §4. In §2.5, dropping the additive constant is valid for computing a policy. The kernel proof below derives (11)–(14) from (7), (8) and (10). The experiment on p. 20 uses $\kappa=2/(1-\alpha)$, which clears the threshold. The approximation theorem uses the distinct program (18) and still needs its own proof audit. [Algorithm](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=10) · [Approximation guarantee](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=12) · [Experiment](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=20)
+
+## Kernel evaluation and the greedy policy
+
+For a realized finite sample and a real feature kernel, (12) and (13) are the Gram and linear coefficients of the dual. Under the penalty condition of the replacement proposition, every kernel minimizer gives the same greedy action set as every optimal primal fit at every state. This includes ties and queries outside the sample. [Standalone proof](../proofs/kernel-policy.pdf) · [General Lean proofs](../Kadp/KernelPolicy.lean)
+
+| Claim | Lean evidence |
+| --- | --- |
+| (12) and (13) agree with the feature coefficients, and the matrix is positive semidefinite | `kernelGram_eq`, `kernelLinear_eq`, `kernelGram_psd` |
+| Setting the additive constant to zero preserves the minimizing set, and a minimum exists | `kernelObjective_add_constant`, `kernelObjective_normalization`, `exists_kernel_minimizer` |
+| (11) and (14) differ by the intercept, and optimal fits agree on all greedy actions | `value_recovered_eq_kernel`, `actionScore_add_const`, `kernelPolicy_of_optima` |
+
+**Neighborhood correction.** Section 2.3 includes the current state in each neighborhood. Section 2.5 describes only states reachable with positive probability. In the two-state witness, the sampled state has no self-transition under action $B$. Omitting the current state changes $Q(s,B,s,B)$ from $0$ to $1$ and $R(s,B)$ from $1$ to $5/2$. The formal witness is `successors_only_changes_coefficients`. [Checked example](../Kadp/Examples/KernelPolicy.lean) · [Neighborhood definition](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=7) · [Algorithm summary](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=10)
 
 ## Unnumbered claims to audit
 
 | Location | Claim and assumptions to check | Status |
 | --- | --- | --- |
 | §2.1 and (1), p. 5 | The optimal policy and Bellman LP represent the same value under positive relevance weights. Resolve the policy's printed maximization convention against cost minimization. | Open |
-| §2.3–2.5, pp. 7–10 | (7) gives a positive semidefinite Gram matrix. Equations (11)–(14) recover the sampled coefficients and policy from the multiplier. Check indices, weights and invariance of greedy actions to the offset. | Open |
+| §2.3–2.5, pp. 7–10 | (7) gives a positive semidefinite Gram matrix. Equations (11)–(14) recover the sampled coefficients and policy from the multiplier. | **Proved as printed** in the finite-state feature model with the §2.3 neighborhood. The §2.5 prose needs the correction above. |
 | §3.1, p. 11 | For each $\Gamma>0$ some $C\ge0$ gives (5) and (15) the same optimal solutions and values for sufficiently large $B$. Full feature rank gives zero best approximation error for a sufficiently large radius. | Open |
 | §3.2, pp. 12–13 | (17) defines a probability distribution. The discussion after (18) gives a sufficient size of $B$ for the offset constraint to be nonbinding. | Open |
 | §4.1–4.2, pp. 15–18 | The pair selection rule solves (20), and absence of a feasible improving pair certifies optimality. | Open |

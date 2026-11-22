@@ -83,7 +83,7 @@ theorem exists_dual_minimizer [Nonempty A] (hκ : 1 / (1 - D.α) ≤ D.κ) :
     hcont.continuousOn
 
 omit [Fintype A] in
-private theorem gramCoeff_inner (i : Fin N) (a : A) (j : Fin N) (c : A) :
+theorem gramCoeff_inner (i : Fin N) (a : A) (j : Fin N) (c : A) :
     D.gramCoeff i a j c = inner ℝ (D.featureDiff i a) (D.featureDiff j c) := by
   simp only [gramCoeff, featureDiff, sum_inner, real_inner_smul_left]
   simp only [inner_sum, real_inner_smul_right, Finset.mul_sum, mul_assoc]
@@ -96,20 +96,23 @@ private theorem linearCoeff_inner (i : Fin N) (a : A) :
   simp only [inner_sum, real_inner_smul_right, Finset.mul_sum, mul_assoc, div_eq_inv_mul]
   simp_rw [real_inner_comm (D.feature (D.sample _))]
 
+/-- The Gram quadratic form is the squared norm of the multiplier feature. -/
+theorem gram_quadratic_eq_norm_sq (l : Fin N → A → ℝ) :
+    (∑ i, ∑ a, ∑ j, ∑ c, l i a * D.gramCoeff i a j c * l j c) =
+    ‖D.multiplierFeature l‖ ^ 2 := by
+  rw [← real_inner_self_eq_norm_sq]
+  simp only [multiplierFeature, sum_inner, inner_sum, real_inner_smul_left,
+    real_inner_smul_right, gramCoeff_inner]
+  apply Finset.sum_congr rfl; intro i _
+  apply Finset.sum_congr rfl; intro a _
+  apply Finset.sum_congr rfl; intro j _
+  apply Finset.sum_congr rfl; intro c _
+  rw [real_inner_comm (D.featureDiff i a) (D.featureDiff j c)]
+  ring
+
 theorem dualObjective_normalization (l : Fin N → A → ℝ) :
     D.dualObjective l = D.Γ * D.correctedDualObjective l + D.dualConstant -
       ‖D.meanFeature‖ ^ 2 / 2 := by
-  have hquad : (∑ i, ∑ a, ∑ j, ∑ c, l i a * D.gramCoeff i a j c * l j c) =
-      ‖D.multiplierFeature l‖ ^ 2 := by
-    rw [← real_inner_self_eq_norm_sq]
-    simp only [multiplierFeature, sum_inner, inner_sum, real_inner_smul_left,
-      real_inner_smul_right, gramCoeff_inner]
-    apply Finset.sum_congr rfl; intro i _
-    apply Finset.sum_congr rfl; intro a _
-    apply Finset.sum_congr rfl; intro j _
-    apply Finset.sum_congr rfl; intro c _
-    rw [real_inner_comm (D.featureDiff i a) (D.featureDiff j c)]
-    ring
   have hlin : (∑ i, ∑ a, D.linearCoeff i a * l i a) =
       D.Γ * (∑ i, ∑ a, l i a * D.cost (D.sample i) a) -
       inner ℝ D.meanFeature (D.multiplierFeature l) := by
@@ -118,7 +121,7 @@ theorem dualObjective_normalization (l : Fin N → A → ℝ) :
     apply Finset.sum_congr rfl; intro i _
     apply Finset.sum_congr rfl; intro a _
     ring
-  rw [dualObjective, hquad, hlin, correctedDualObjective, norm_sub_sq_real]
+  rw [dualObjective, D.gram_quadratic_eq_norm_sq, hlin, correctedDualObjective, norm_sub_sq_real]
   field_simp [D.Γ_pos.ne']
   ring
 
