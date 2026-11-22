@@ -10,6 +10,10 @@ The self-contained notes in `proofs/` group supporting lemmas with the results t
 
 **Theorem 2. A weighted approximation guarantee.** Equation (25) holds at the published confidence and sample size, including when no weight attains its infimum. The proof selects a comparator before sampling. A two-state example shows how a weight reduces the bound for the same fitted value function. [PDF](proofs/theorem-2.pdf) · [LaTeX](proofs/theorem-2.tex) · [Lean theorem](Kadp/Theorem2.lean) · [Checked example](Kadp/Examples/Theorem2.lean)
 
+**Theorem 3. Uniform concentration for the sampled residual.** For any fixed policy and state sampling law, the probability that the largest population-minus-sample residual deviation reaches $\epsilon$ is at most $\delta$. The note gives the corrected positive-envelope version of Lemma 1 and a zero-function counterexample to its unrestricted closed tail. [PDF](proofs/theorem-3.pdf) · [LaTeX](proofs/theorem-3.tex) · [Lean theorem](Kadp/Theorem3.lean)
+
+**Proposition 2. Two-coordinate descent for the sampled dual.** Every suboptimal feasible point of (9) admits a strictly improving transfer. The note proves the stopping certificate and pair search, corrects the restricted objective (22), and gives a sampled problem on which the printed update stalls. [PDF](proofs/proposition-2.pdf) · [LaTeX](proofs/proposition-2.tex) · [Lean proposition](Kadp/ActiveSet.lean) · [Checked example](Kadp/Examples/Proposition2.lean)
+
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 
 ```sh
@@ -31,7 +35,9 @@ To inspect the assumptions behind the main results, run the command below. Lean 
 ```sh
 printf '%s\n' 'import Kadp' '#print axioms Kadp.SampledRSALP.strongDuality' '#print axioms Kadp.SampledRSALP.kernelPolicy_of_optima' '#print axioms Kadp.Occupancy.hasSum_occupancy' '#print axioms Kadp.Occupancy.residual_identity' \
   '#print axioms Kadp.Theorem1.theorem1' '#print axioms Kadp.Theorem1.strengthened' \
-  '#print axioms Kadp.Theorem2.theorem2' '#print axioms Kadp.Examples.Theorem2.infimum_not_attained' | lake env lean --stdin
+  '#print axioms Kadp.Theorem2.theorem2' '#print axioms Kadp.Examples.Theorem2.infimum_not_attained' \
+  '#print axioms Kadp.Theorem3.theorem3' '#print axioms Kadp.lemma1_populationDeviation_tail' \
+  '#print axioms Kadp.SampledRSALP.proposition2' '#print axioms Kadp.Examples.Proposition2.printed22_stalls' | lake env lean --stdin
 ```
 
 The approximation proof reuses the Bellman contraction and optimal-policy results from LeanEconomics and the Hilbert predictor, contraction, and concentration results from FoML. The manifest fixes both revisions. [LeanEconomics](https://github.com/LeanEconomics/DynamicProgramming/tree/9d4783f3fb282444f8f3a91c4e6439293dd4bacc/FiniteStates/MarkovDecisionProcesses) · [FoML](https://github.com/auto-res/lean-rademacher/tree/db9f18714b0b9934553c37db1b41250462dc7faa)
@@ -45,4 +51,6 @@ tectonic proofs/proposition-1.tex
 tectonic proofs/kernel-policy.tex
 tectonic proofs/theorem-1.tex
 tectonic proofs/theorem-2.tex
+tectonic proofs/theorem-3.tex
+tectonic proofs/proposition-2.tex
 ```

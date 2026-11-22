@@ -1,7 +1,4 @@
-import Kadp.Approximation
-import Kadp.Idealized
-import Kadp.ResidualComplexity
-import Kadp.UniformDeviation
+import Kadp.Theorem3
 
 /-! The high-probability approximation guarantee for the idealized sampled program
 (18). The event contains every optimizer of the original program with slacks. -/
@@ -70,43 +67,29 @@ theorem uniform_policy_residual (μ : S → A) (ν : S → ℝ) (hν : IsDistrib
     1 - δ ≤ (sampleLaw M μ ν hν N).real {X | ∀ p : Parameters H C B,
       discountedOccupancy M μ ν ⬝ᵥ policyResidual M μ (fit Φ p) ≤
         sampleMean X (policyResidual M μ (fit Φ p)) + ε} := by
-  letI := parameters_nonempty (H := H) hC hB
-  let D := envelope Φ M C B
+  let π := discountedOccupancy M μ ν
+  let hπ := occupancy_isDistribution M μ hν
+  let P := (samplingPMF π hπ).toMeasure
   let f (p : Parameters H C B) := policyResidual M μ (fit Φ p)
-  have hf (p : Parameters H C B) (x : S) : |f p x| ≤ D / 2 := abs_residual_le Φ M μ hC hB p x
-  rcases (envelope_nonneg Φ M hC hB).eq_or_lt with hzero | hpos
-  · have h (p : Parameters H C B) : policyResidual M μ (fit Φ p) = 0 := by
-      funext x
-      have hz := hf p x
-      rw [show D = 0 from hzero.symm, zero_div, abs_nonpos_iff] at hz
-      exact hz
-    have hall : {X : Fin N → S | ∀ p : Parameters H C B,
-        discountedOccupancy M μ ν ⬝ᵥ policyResidual M μ (fit Φ p) ≤
-          sampleMean X (policyResidual M μ (fit Φ p)) + ε} = Set.univ := by
-      simp [h, sampleMean, hε.le]
-    rw [hall]
-    simpa [sampleLaw] using (sub_le_self 1 hδ.le)
-  · let π := discountedOccupancy M μ ν
-    let hπ := occupancy_isDistribution M μ hν
-    let P := (samplingPMF π hπ).toMeasure
-    have hrad (X : Fin N → S) : empiricalRademacherComplexity_without_abs N
-        (fun i x => -f i x) X ≤ (D / 2) / Real.sqrt N := by
-      let w := fun p : Parameters H C B => p.val.1
-      let b := fun p : Parameters H C B => (1 - M.β) * p.val.2
-      have hb (p : Parameters H C B) : |b p| ≤ (1 - M.β) * B := by
-        rw [show |b p| = (1 - M.β) * |p.val.2| by
-          simp [b, abs_mul, abs_of_pos (sub_pos.mpr M.β_lt_one)]]
-        exact mul_le_mul_of_nonneg_left p.property.2 (sub_nonneg.mpr M.β_lt_one.le)
-      have he := empirical_negative_residual_le hN (featureDifference Φ M μ) w b
-        (fun x => -M.rσ μ x) X (norm_featureDifference Φ M μ) (fun p => p.property.1) hb
-      simp only [f, policyResidual, fit_residual_eq]
-      refine he.trans (div_le_div_of_nonneg_right ?_ (Real.sqrt_nonneg _))
-      dsimp only [D, envelope]
-      have h₁ := mul_nonneg hC (mul_nonneg (norm_nonneg Φ) (by linarith only [M.β_pos] : 0 ≤ 1 + M.β))
-      have h₂ := mul_nonneg (sub_nonneg.mpr M.β_lt_one.le) hB
-      linarith [norm_nonneg M.r]
-    have hu := uniform_population_le_empirical P f hpos hε hδ hδ₁ hf hrad hsize
-    simpa only [P, sampling_integral, π, f, sampleLaw, sampleMean, div_eq_inv_mul] using hu
+  let E : Set (Fin N → S) := {X | ε ≤ ⨆ p, π ⬝ᵥ f p - sampleMean X (f p)}
+  have htail : (Measure.pi (fun _ : Fin N => P)).real E ≤ δ := by
+    simpa only [E, f, P, sampling_integral] using
+      Theorem3.theorem3 M Φ μ P hC hB hε hδ hδ₁ hN hsize
+  have hgood : 1 - δ ≤ (Measure.pi (fun _ : Fin N => P)).real Eᶜ := by
+    rw [probReal_compl_eq_one_sub E.toFinite.measurableSet]
+    linarith
+  refine hgood.trans (measureReal_mono ?_)
+  intro X hX p
+  have hneg (q : Parameters H C B) (x : S) : |-f q x| ≤ envelope Φ M C B / 2 := by
+    rw [abs_neg]
+    exact abs_residual_le Φ M μ hC hB q x
+  have hle := FoML.ToFoML.le_oneSidedDeviation (μ := P) hN id hneg X p
+  simp only [FoML.ToFoML.oneSidedDeviation, id_eq, integral_neg, Finset.sum_neg_distrib,
+    mul_neg, neg_sub_neg, P, sampling_integral, ← div_eq_inv_mul] at hle
+  change π ⬝ᵥ f p - sampleMean X (f p) ≤ ⨆ q, π ⬝ᵥ f q - sampleMean X (f q) at hle
+  change ¬ε ≤ ⨆ q, π ⬝ᵥ f q - sampleMean X (f q) at hX
+  change π ⬝ᵥ f p ≤ sampleMean X (f p) + ε
+  linarith [lt_of_not_ge hX]
 
 /-- The stronger guarantee: simultaneously for all maximizers of (18), at confidence
 1 − δ, with only one sampling error term. -/

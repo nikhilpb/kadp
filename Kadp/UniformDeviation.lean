@@ -25,7 +25,7 @@ private theorem oneSidedComplexity_reindex_le {S I J : Type*} [Nonempty J]
   simpa [abs_mul, abs_sigma] using hG i x
 
 /-- The sample threshold makes room for twice the expected complexity and the tail radius. -/
-private theorem confidence_and_complexity_le {D ε δ : ℝ} {n : ℕ}
+theorem confidence_and_complexity_le {D ε δ : ℝ} {n : ℕ}
     (hD : 0 < D) (hε : 0 < ε)
     (hn : (D * (1 + Real.sqrt (2 * Real.log (1 / δ)))) ^ 2 / ε ^ 2 ≤ n) :
     0 < n ∧ 2 * ((D / 2) / Real.sqrt n) + confidenceRadius 1 D δ n ≤ ε := by

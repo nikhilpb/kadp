@@ -15,14 +15,14 @@ Page numbers below are the printed pages of the August 29, 2022 version. Status 
 | --- | --- | --- | --- |
 | Proposition 1, p. 8 | For the sampled programs, both optima are finite, attained and equal. An optimal multiplier recovers a primal weight by (10). | (6)–(10), Appendix A | **Refuted as printed.** The replacement is proved in Lean, including equality at the threshold. |
 | Theorem 1, p. 13 | At the sample threshold, an optimizer of (18) has $\nu$-weighted absolute error bounded by $(3+\alpha)/(1-\alpha)$ times the best admissible sup-norm error plus $4\epsilon/(1-\alpha)$, with probability at least $1-\delta-\delta^4$. | Discounted occupancy, optimality in (18), uniform fixed-policy deviation, Bellman contraction | **Proof gap with a repaired proof.** The original guarantee follows from the stronger result below. [Theorem and proof](../proofs/theorem-1.pdf) · [Lean](../Kadp/Theorem1.lean) |
-| Proposition 2, p. 18 | Every feasible suboptimal point of (9) admits a feasible strict descent direction with exactly two nonzero coordinates. | Gram positivity in (7), row caps, mass equality, Lemma 4 and Appendix D | Open |
+| Proposition 2, p. 18 | Every feasible suboptimal point of (9) admits a feasible strict descent direction with exactly two nonzero coordinates. | Exact quadratic expansion, capped-row exchange and Lemma 4 | **Proved as printed.** Applies to (9), including singular Gram matrices and saturated rows. [Lean](../Kadp/ActiveSet.lean) |
 | Theorem 2, p. 28 | Same optimizer, sample threshold and confidence as Theorem 1. Bound (25) takes the infimum over admissible $z,b$ and $\psi\ge1$ of the weighted sup-error times $\nu^\top\psi+2(\pi_{\mu^*,\nu}^\top\psi)(1+\alpha\beta(\psi))/(1-\alpha)$, then adds $4\epsilon/(1-\alpha)$. Here $\beta(\psi)=\max_{x,a}(P_a\psi)(x)/\psi(x)$. | Occupancy identity, (18), the two deviations and the weighted Bellman estimate | **Proof gap with a repaired proof.** Equation (25) holds at the printed constants for the joint infimum, including unattained infima. [Theorem and proof](../proofs/theorem-2.pdf) · [Lean](../Kadp/Theorem2.lean) |
-| Lemma 1, p. 29 | For an i.i.d. sample and class uniformly bounded in absolute value by $B$, the event $\sup_f(Pf-P_N f)\ge R_N+\sqrt{2B^2\ln(1/\delta)/N}$ has probability at most $\delta$. | Appendix C, symmetrization and bounded differences | The finite-state consequence used in (19) is proved. The general statement and its endpoint cases remain open. |
+| Lemma 1, p. 29 | For an i.i.d. sample and class uniformly bounded in absolute value by $B$, the event $\sup_f(Pf-P_N f)\ge R_N+\sqrt{2B^2\ln(1/\delta)/N}$ has probability at most $\delta$. | Appendix C, symmetrization and bounded differences | **Refuted at $B=0$.** For $B>0$ the exact closed tail is proved for nonempty, possibly uncountable classes over finite or countable discrete state spaces. [Lemma and counterexample](../Kadp/OneSidedConcentration.lean) |
 | Lemma 2, p. 29 | For a fixed policy $\mu$, feature bound $K$ and radius $C$, $L_\mu$ pairs $z$ with $\Phi(x)-\alpha E[\Phi(X')\mid x,\mu(x)]$. Its complexity is at most $2CK(1+\alpha)/\sqrt N$. | Signed Hilbert-space sum, norm bound | **Proved.** The empirical bound holds for each draw, hence also after expectation. See the normalization below. |
 | Corollary 1, p. 30 | Under the class and sampling assumptions, $R_N(F_\mu)\le D/\sqrt N$. | Lemma 2, offset class and contraction | **Proved.** The empirical bound below implies the printed constant. |
 | Lemma 3, p. 30 | For each fixed $f$ in either residual class, $\|f\|_\infty\le D/2$. At the sample threshold, $\Pr(P_Nf-Pf\ge\epsilon)\le\delta^4$. | Pointwise residual envelopes, bounded differences | **Proved** for both classes on the finite state space. Includes the zero envelope. |
-| Theorem 3, p. 30 | At the sample threshold and for fixed $\mu$, $\Pr(\sup_{f\in F_\mu}(Pf-P_N f)\ge\epsilon)\le\delta$. | Lemmas 1 and 3, Corollary 1 | The good event $\forall f,\ Pf-P_N f\le\epsilon$ required for (19) is proved. A separate assertion for the printed $\ge\epsilon$ failure event remains open. |
-| Lemma 4, p. 34 | For real finite vectors with $\sum_i x_i=0$ and $x^\top y<0$, there are $i,j$ with $y_i<y_j$, $x_i>0$ and $x_j<0$. | Positive and negative parts of a zero-sum vector | Open |
+| Theorem 3, p. 30 | At the sample threshold and for fixed $\mu$, $\Pr(\sup_{f\in F_\mu}(Pf-P_N f)\ge\epsilon)\le\delta$. | Lemmas 1 and 3, Corollary 1 | **Proved as printed.** The supremum may equal $\epsilon$ in the failure event. The theorem covers every fixed policy, any state law and $D=0$. [Lean](../Kadp/Theorem3.lean) |
+| Lemma 4, p. 34 | For real finite vectors with $\sum_i x_i=0$ and $x^\top y<0$, there are $i,j$ with $y_i<y_j$, $x_i>0$ and $x_j<0$. | Positive and negative parts of a zero-sum vector | **Proved as printed.** [Exchange lemma](../Kadp/Exchange.lean) |
 
 ## Proposition 1 witnesses
 
@@ -88,7 +88,7 @@ Every draw has an optimizer. On one event of probability at least $1-\delta$, ev
 | Lemma 3 and uniform sampling | `abs_residual_le` in [Idealized](../Kadp/Idealized.lean), `abs_bellmanResidual_le` in [Theorem1](../Kadp/Theorem1.lean), `fixed_comparator_tail` and `uniform_population_le_empirical` in [UniformDeviation](../Kadp/UniformDeviation.lean) |
 | Equation (19) and the sharper guarantee | `theorem1`, `strengthened` in [Theorem1](../Kadp/Theorem1.lean) |
 
-**Proof reuse.** FoML (MIT, revision `db9f18714b0b9934553c37db1b41250462dc7faa`) supplies `hilbertPredictor_empiricalRademacherComplexity_le`, coordinatewise contraction, and the countable-class one-sided deviation theorem. Its normalization is $1/N$. To apply the last theorem to unrestricted parameters, select one violating fit for each possible failing sample. The resulting finite family is fixed over the whole sample space, has no greater complexity, and detects every failure. [Pinned FoML source](https://github.com/auto-res/lean-rademacher/tree/db9f18714b0b9934553c37db1b41250462dc7faa/FoML)
+**Proof reuse.** FoML (MIT, revision `db9f18714b0b9934553c37db1b41250462dc7faa`) supplies `hilbertPredictor_empiricalRademacherComplexity_le`, coordinatewise contraction, and the countable-class one-sided deviation theorem. Its normalization is $1/N$. Theorem 1 now specializes Theorem 3 to the discounted occupancy law. Its concentration proof uses a countably dense subclass to preserve the exact supremum. [Pinned FoML source](https://github.com/auto-res/lean-rademacher/tree/db9f18714b0b9934553c37db1b41250462dc7faa/FoML)
 
 ## Theorem 2 and the infimum over weights
 
@@ -103,6 +103,24 @@ Every draw has an optimizer. On one event of probability at least $1-\delta$, ev
 
 **Proof reuse.** Theorem 2 reuses the project's occupancy and residual identities, sample optimality, and FoML-based concentration proofs. Econlib also has a weighted Bellman contraction theorem under a strict contraction hypothesis. Here the one-step factor $\alpha\beta(\psi)$ can exceed one, so the proof derives its estimate directly from the stochastic transition rows. [Econlib's weighted Blackwell hypotheses](https://github.com/danlyng/Econlib/blob/main/Econlib/Optimization/DynamicProgramming/Core/Weighted.lean) · [Weighted estimate](../Kadp/Weighted.lean)
 
+## Theorem 3 and the closed tail
+
+The theorem controls the supremum over the positive fixed-policy Bellman residuals of every admissible affine fit under any i.i.d. state law. The public declaration uses the printed sample size, positive $\epsilon$, and $0<\delta<1$. It includes the event of equality and allows a vanishing residual envelope. Lemma 1 uses the paper's expected $2/N$ Rademacher complexity. With a zero envelope, the singleton zero class makes its closed tail have probability one. For Theorem 3 the threshold remains $\epsilon>0$, so the zero-envelope failure probability is zero. [Standalone proof](../proofs/theorem-3.pdf) · [Lean theorem](../Kadp/Theorem3.lean)
+
+The corrected lemma reuses FoML’s dense restriction, one-sided deviation and sign-symmetry results. On a countable discrete state space a uniformly bounded class has a countable subclass dense for pointwise convergence. Bounded convergence preserves population expectations in this approximation, so the full and restricted suprema agree for each sample. [Exact normalization, positive-envelope lemma and witness](../Kadp/OneSidedConcentration.lean)
+
+## Proposition 2 and the restricted update
+
+**The proposition holds.** Two-coordinate transfers preserve total mass. A positive donor allows a transfer to any coordinate in its own row or any row with room. A strictly smaller gradient component at the receiver gives an interval of strictly improving steps for (9). The search over full rows and unfilled rows covers all such pairs. [Standalone proof](../proofs/proposition-2.pdf)
+
+| Claim | Lean evidence |
+| --- | --- |
+| Lemma 4 and existence of a cheaper legal transfer for a linear cost | `exists_improving_pair_of_sum_zero`, `exists_capped_exchange` in [Exchange](../Kadp/Exchange.lean) |
+| Exact quadratic restriction, two-coordinate descent and global stopping | `dualObjective_along`, `dualObjective_block`, `transfer_card`, `proposition2`, `optimal_iff_no_improving_transfer` in [ActiveSet](../Kadp/ActiveSet.lean) |
+| Pair selection for (20) at sparsity two | `pair_search_optimal_for_two_coordinate_directions`, `pair_search_descent_iff` in [PairSelection](../Kadp/PairSelection.lean), `exists_improving_search_candidate` in [ActiveSet](../Kadp/ActiveSet.lean) |
+
+**The update in (22) can stall.** On a two-coordinate working set the correct quadratic and cross coefficients are $1/2$ and $1$. Equation (22) uses $1$ and $2$ with the same linear coefficient. In the checked two-action sample, write $\lambda=(2-u,u)$ with $0\le u\le2$. At $u=1/2$, the printed update uniquely minimizes $u^2-u$ and returns the current point. Moving to $u=1$ lowers (9), whose objective is $u^2/2-u$, from $-3/8$ to $-1/2$. This affects the written subproblem and the associated stopping argument. [Lean witness](../Kadp/Examples/Proposition2.lean)
+
 ## Unnumbered claims to audit
 
 | Location | Claim and assumptions to check | Status |
@@ -112,6 +130,7 @@ Every draw has an optimizer. On one event of probability at least $1-\delta$, ev
 | §3.1, p. 11 | For each $\Gamma>0$ some $C\ge0$ gives (5) and (15) the same optimal solutions and values for sufficiently large $B$. Full feature rank gives zero best approximation error for a sufficiently large radius. | Open |
 | §3.2, p. 12 | The inverse and series in (17) define the same probability distribution. | **Proved as printed.** See the discounted occupancy result above. |
 | §3.2, p. 13 | The discussion after (18) gives a sufficient size of $B$ for the offset constraint to be nonbinding. | Open |
-| §4.1–4.2, pp. 15–18 | The pair selection rule solves (20), and absence of a feasible improving pair certifies optimality. | Open |
+| §4.1, pp. 15–17 | The pair search solves (20) when $q=2$, and absence of an improving pair certifies global optimality. | **Proved** with unavailable candidate groups skipped and the zero direction used at stopping. [Pair search](../Kadp/PairSelection.lean) · [Stopping certificate](../Kadp/ActiveSet.lean) |
+| §4.2, p. 18 | Solving (22) with the chosen pair decreases (9) from a suboptimal iterate. | **Refuted as printed.** The quadratic and cross terms have twice their correct coefficients. Solving the exact restriction gives strict decrease at a negative-slope pair. [Checked witness](../Kadp/Examples/Proposition2.lean) · [Corrected update](../proofs/proposition-2.pdf) |
 | Appendix B.2, pp. 31–32 | Feasibility of the comparator and the residual inequalities in (26) yield the weighted error bound. Check the sign of the comparator slack. | **Comparator feasibility refuted as printed.** The corrected slack gives the weighted chain for a fixed comparator. A minimizer of the population criterion gives the joint infimum in (25). |
 | Appendix B.3, pp. 32–33 | The empirical total-variation term controls the change of sampling law. The likelihood-ratio version also requires a coupling and a quantified high-probability statement. | Open |

@@ -10,3 +10,6 @@ import Kadp.Theorem1
 import Kadp.Examples.Theorem1
 import Kadp.Theorem2
 import Kadp.Examples.Theorem2
+import Kadp.Theorem3
+import Kadp.ActiveSet
+import Kadp.Examples.Proposition2
