@@ -6,7 +6,7 @@ Page numbers below are the printed pages of the August 29, 2022 version. Status 
 
 - **Model.** Finite nonempty state and action spaces, stochastic transition rows, a real cost $g$, and $0<\alpha<1$. Features take values in a real Hilbert space. The value approximation is $J(x)=\langle\Phi(x),z\rangle+b$.
 - **Sampled programs.** Equations (6) and (9) use $N>0$ draws from a positive distribution $\pi$, weights $w=\nu/\pi$, and $\Gamma,\kappa>0$. The theorem allows arbitrary strictly positive relevance weights $\nu$, including the distribution convention in §2.5. Indexing by draw retains multiplicities. Both examples have a single possible draw of probability one.
-- **Idealized program.** For (18), $\nu$ is a distribution, $\mu^*$ is optimal, and the draws are independent from its discounted occupancy $\pi_{\mu^*,\nu}$ in (17). The admissible parameters obey $\|z\|\le C$ and $|b|\le B$. Define $K=\max_x\|\Phi(x)\|$, $D=4CK(1+\alpha)+4B(1-\alpha)+2\|g\|_\infty$, and $\Xi=D(1+\sqrt{2\ln(1/\delta)})$. In the rows below, the sample threshold is $N\ge\Xi^2/\epsilon^2$. Theorems 1 and 2 print $\epsilon,\delta>0$. Check the domain of the square root and degenerate envelopes when formalizing the probability claims.
+- **Idealized program.** For (18), $\nu$ is a distribution, $\mu^*$ is optimal, and the draws are independent from its discounted occupancy $\pi_{\mu^*,\nu}$ in (17). The admissible parameters obey $\|z\|\le C$ and $|b|\le B$. Define $K=\max_x\|\Phi(x)\|$, $D=4CK(1+\alpha)+4B(1-\alpha)+2\|g\|_\infty$, and $\Xi=D(1+\sqrt{2\ln(1/\delta)})$. In the rows below, the sample threshold is $N\ge\Xi^2/\epsilon^2$. Theorems 1 and 2 print $\epsilon,\delta>0$. The proof uses $0<\delta<1$ for the square root and handles $D=0$ directly. For $\delta\ge1$ the probability lower bound in (19) is nonpositive.
 - **Classes.** With fixed policy $\mu$, write $L_\mu$ for the linear class in Lemma 2, $F_\mu$ for $(J-T_\mu J)^+$ and $F$ for $(J-TJ)^+$ with the admissible parameters above. $P$ and $P_N$ are population and empirical means. $R_N$ is the paper's expected one-sided Rademacher complexity with factor $2/N$.
 
 ## Numbered results
@@ -14,14 +14,14 @@ Page numbers below are the printed pages of the August 29, 2022 version. Status 
 | Claim | Hypotheses and conclusion | Proof dependencies | Status |
 | --- | --- | --- | --- |
 | Proposition 1, p. 8 | For the sampled programs, both optima are finite, attained and equal. An optimal multiplier recovers a primal weight by (10). | (6)–(10), Appendix A | **Refuted as printed.** The replacement is proved in Lean, including equality at the threshold. |
-| Theorem 1, p. 13 | At the sample threshold, an optimizer of (18) has $\nu$-weighted absolute error bounded by $(3+\alpha)/(1-\alpha)$ times the best admissible sup-norm error plus $4\epsilon/(1-\alpha)$, with probability at least $1-\delta-\delta^4$. | Theorem 2 with $\psi=1$ | Open. The [Theorem 1 writeup](../proofs/theorem-1.pdf) includes the verified occupancy lemma. |
+| Theorem 1, p. 13 | At the sample threshold, an optimizer of (18) has $\nu$-weighted absolute error bounded by $(3+\alpha)/(1-\alpha)$ times the best admissible sup-norm error plus $4\epsilon/(1-\alpha)$, with probability at least $1-\delta-\delta^4$. | Discounted occupancy, optimality in (18), uniform fixed-policy deviation, Bellman contraction | **Proof gap with a repaired proof.** The original guarantee follows from the stronger result below. [Theorem and proof](../proofs/theorem-1.pdf) · [Lean](../Kadp/Theorem1.lean) |
 | Proposition 2, p. 18 | Every feasible suboptimal point of (9) admits a feasible strict descent direction with exactly two nonzero coordinates. | Gram positivity in (7), row caps, mass equality, Lemma 4 and Appendix D | Open |
 | Theorem 2, p. 28 | Same optimizer, sample threshold and confidence as Theorem 1. Bound (25) takes the infimum over admissible $z,b$ and $\psi\ge1$ of the weighted sup-error times $\nu^\top\psi+2(\pi_{\mu^*,\nu}^\top\psi)(1+\alpha\beta(\psi))/(1-\alpha)$, then adds $4\epsilon/(1-\alpha)$. Here $\beta(\psi)=\max_{x,a}(P_a\psi)(x)/\psi(x)$. | (17), (18), (26), Lemma 3, Theorem 3, SALP residual bounds | Open |
-| Lemma 1, p. 29 | For an i.i.d. sample and class uniformly bounded in absolute value by $B$, the event $\sup_f(Pf-P_N f)\ge R_N+\sqrt{2B^2\ln(1/\delta)/N}$ has probability at most $\delta$. | Appendix C, symmetrization and bounded differences | Open |
-| Lemma 2, p. 29 | For a fixed policy $\mu$, feature bound $K$ and radius $C$, $L_\mu$ pairs $z$ with $\Phi(x)-\alpha E[\Phi(X')\mid x,\mu(x)]$. Its complexity is at most $2CK(1+\alpha)/\sqrt N$. | Signed Hilbert-space sum, norm bound | Open |
-| Corollary 1, p. 30 | Under the class and sampling assumptions, $R_N(F_\mu)\le D/\sqrt N$. | Lemma 2, offset class and contraction | Open |
-| Lemma 3, p. 30 | For each fixed $f$ in either residual class, $\|f\|_\infty\le D/2$. At the sample threshold, $\Pr(P_Nf-Pf\ge\epsilon)\le\delta^4$. | Pointwise envelope, Hoeffding's inequality | Open |
-| Theorem 3, p. 30 | At the sample threshold and for fixed $\mu$, $\Pr(\sup_{f\in F_\mu}(Pf-P_N f)\ge\epsilon)\le\delta$. | Lemmas 1 and 3, Corollary 1 | Open |
+| Lemma 1, p. 29 | For an i.i.d. sample and class uniformly bounded in absolute value by $B$, the event $\sup_f(Pf-P_N f)\ge R_N+\sqrt{2B^2\ln(1/\delta)/N}$ has probability at most $\delta$. | Appendix C, symmetrization and bounded differences | The finite-state consequence used in (19) is proved. The general statement and its endpoint cases remain open. |
+| Lemma 2, p. 29 | For a fixed policy $\mu$, feature bound $K$ and radius $C$, $L_\mu$ pairs $z$ with $\Phi(x)-\alpha E[\Phi(X')\mid x,\mu(x)]$. Its complexity is at most $2CK(1+\alpha)/\sqrt N$. | Signed Hilbert-space sum, norm bound | **Proved.** The empirical bound holds for each draw, hence also after expectation. See the normalization below. |
+| Corollary 1, p. 30 | Under the class and sampling assumptions, $R_N(F_\mu)\le D/\sqrt N$. | Lemma 2, offset class and contraction | **Proved.** The empirical bound below implies the printed constant. |
+| Lemma 3, p. 30 | For each fixed $f$ in either residual class, $\|f\|_\infty\le D/2$. At the sample threshold, $\Pr(P_Nf-Pf\ge\epsilon)\le\delta^4$. | Pointwise residual envelopes, bounded differences | **Proved** for both classes on the finite state space. Includes the zero envelope. |
+| Theorem 3, p. 30 | At the sample threshold and for fixed $\mu$, $\Pr(\sup_{f\in F_\mu}(Pf-P_N f)\ge\epsilon)\le\delta$. | Lemmas 1 and 3, Corollary 1 | The good event $\forall f,\ Pf-P_N f\le\epsilon$ required for (19) is proved. A separate assertion for the printed $\ge\epsilon$ failure event remains open. |
 | Lemma 4, p. 34 | For real finite vectors with $\sum_i x_i=0$ and $x^\top y<0$, there are $i,j$ with $y_i<y_j$, $x_i>0$ and $x_j<0$. | Positive and negative parts of a zero-sum vector | Open |
 
 ## Proposition 1 witnesses
@@ -45,7 +45,7 @@ Both instances use one state, action and draw, unit transition and distribution 
 | Construct a feasible intercept and slacks for every minimizing multiplier | `primal_attains_of_dual_minimizer` in [PrimalAttainment](../Kadp/PrimalAttainment.lean) |
 | Apply the result directly to a minimizer of the printed QP (9) | `dualObjective_le_iff`, `primal_attains_of_printed_dual_minimizer` in [PrimalAttainment](../Kadp/PrimalAttainment.lean) |
 
-**Downstream effects.** Positive affine normalization preserves the optimizer, the improving directions and the stopping criterion for the QP of §4. In §2.5, dropping the additive constant is valid for computing a policy. The kernel proof below derives (11)–(14) from (7), (8) and (10). The experiment on p. 20 uses $\kappa=2/(1-\alpha)$, which clears the threshold. The approximation theorem uses the distinct program (18) and still needs its own proof audit. [Algorithm](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=10) · [Approximation guarantee](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=12) · [Experiment](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=20)
+**Downstream effects.** Positive affine normalization preserves the optimizer, the improving directions and the stopping criterion for the QP of §4. In §2.5, dropping the additive constant is valid for computing a policy. The kernel proof below derives (11)–(14) from (7), (8) and (10). The experiment on p. 20 uses $\kappa=2/(1-\alpha)$, which clears the threshold. Theorem 1 uses the distinct program (18) and is proved independently below. [Algorithm](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=10) · [Approximation guarantee](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=12) · [Experiment](https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf#page=20)
 
 ## Kernel evaluation and the greedy policy
 
@@ -74,6 +74,22 @@ For a realized finite sample and a real feature kernel, (12) and (13) are the Gr
 
 **Two-state check.** Starting at $s$, the occupancy row is $(2/3,1/3)$. The residuals $3/4$ and $-1$ give a weighted mean of $1/6$. With $\alpha=1/2$, the expected initial error is $1/3$. [Lean example](../Kadp/Examples/Occupancy.lean)
 
+## Theorem 1 and the comparator slack
+
+**The guarantee survives the sign correction.** The least feasible slack for a comparison function $V$ at draw $i$ is $(V-TV)_+(X_i)$. Appendix B.2 reverses this difference. With one state and action, zero cost, $\alpha=1/2$, and $V=1$, the printed slack is zero while feasibility requires at least $1/2$. [Checked witness](../Kadp/Examples/Theorem1.lean)
+
+Every draw has an optimizer. On one event of probability at least $1-\delta$, every optimizer obeys (19) with additive error $2\epsilon/(1-\alpha)$ at the original sample size. The comparator residual is at most $(1+\alpha)\|J^*-V\|_\infty$ at every state. Only the fitted function's residual under the fixed optimal policy needs a uniform concentration bound. The weighted comparator in Theorem 2 requires a different estimate. [Self-contained proof](../proofs/theorem-1.pdf)
+
+| Step | Lean evidence |
+| --- | --- |
+| Positive-part residual propagation, slack elimination, pathwise bound | `positive_error_le_resolvent`, `slackFeasible_iff`, `oracle_bound` in [Approximation](../Kadp/Approximation.lean) |
+| Existence in an arbitrary feature Hilbert space | `compact_fits` in [Idealized](../Kadp/Idealized.lean), `exists_optimizer`, `exists_best_fit` in [Theorem1](../Kadp/Theorem1.lean) |
+| Lemma 2 and Corollary 1 | `empirical_linear_le`, `empirical_residual_le`, `empirical_negative_residual_le` in [ResidualComplexity](../Kadp/ResidualComplexity.lean). With the paper's $2/N$ normalization, the residual complexity is at most $2[CK(1+\alpha)+B(1-\alpha)]/\sqrt N$. |
+| Lemma 3 and uniform sampling | `abs_residual_le` in [Idealized](../Kadp/Idealized.lean), `abs_bellmanResidual_le` in [Theorem1](../Kadp/Theorem1.lean), `fixed_comparator_tail` and `uniform_population_le_empirical` in [UniformDeviation](../Kadp/UniformDeviation.lean) |
+| Equation (19) and the sharper guarantee | `theorem1`, `strengthened` in [Theorem1](../Kadp/Theorem1.lean) |
+
+**Proof reuse.** FoML (MIT, revision `db9f18714b0b9934553c37db1b41250462dc7faa`) supplies `hilbertPredictor_empiricalRademacherComplexity_le`, coordinatewise contraction, and the countable-class one-sided deviation theorem. Its normalization is $1/N$. To apply the last theorem to unrestricted parameters, select one violating fit for each possible failing sample. The resulting finite family is fixed over the whole sample space, has no greater complexity, and detects every failure. [Pinned FoML source](https://github.com/auto-res/lean-rademacher/tree/db9f18714b0b9934553c37db1b41250462dc7faa/FoML)
+
 ## Unnumbered claims to audit
 
 | Location | Claim and assumptions to check | Status |
@@ -84,5 +100,5 @@ For a realized finite sample and a real feature kernel, (12) and (13) are the Gr
 | §3.2, p. 12 | The inverse and series in (17) define the same probability distribution. | **Proved as printed.** See the discounted occupancy result above. |
 | §3.2, p. 13 | The discussion after (18) gives a sufficient size of $B$ for the offset constraint to be nonbinding. | Open |
 | §4.1–4.2, pp. 15–18 | The pair selection rule solves (20), and absence of a feasible improving pair certifies optimality. | Open |
-| Appendix B.2, pp. 31–32 | Feasibility of the comparator and the residual inequalities in (26) yield the weighted error bound. Check the sign of the comparator slack. | Open |
+| Appendix B.2, pp. 31–32 | Feasibility of the comparator and the residual inequalities in (26) yield the weighted error bound. Check the sign of the comparator slack. | **Comparator feasibility refuted as printed.** The corrected slack and the unweighted guarantee are proved. The weighted chain remains open. |
 | Appendix B.3, pp. 32–33 | The empirical total-variation term controls the change of sampling law. The likelihood-ratio version also requires a coupling and a quantified high-probability statement. | Open |

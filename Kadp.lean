@@ -6,3 +6,5 @@ import Kadp.Examples.Proposition1
 import Kadp.Examples.KernelPolicy
 import Kadp.Occupancy
 import Kadp.Examples.Occupancy
+import Kadp.Theorem1
+import Kadp.Examples.Theorem1

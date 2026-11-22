@@ -3,24 +3,25 @@
 \usepackage{amsmath,amssymb}
 \usepackage{xcolor}
 \definecolor{link}{HTML}{205973}
-\usepackage[colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
+\usepackage[hypertexnames=false,colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
 \hypersetup{pdftitle={Theorem 1. An approximation guarantee for the sampled value function}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
 \raggedbottom
+\newcommand{\pos}[1]{\bigl(#1\bigr)_+}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Prob}{\mathbb P}
 \newcommand{\R}{\mathbb R}
 \newcommand{\lead}[1]{\par\smallskip\noindent\textbf{#1}\enspace}
 
 \begin{document}
 {\LARGE\bfseries Theorem 1. An approximation guarantee\\[2pt] for the sampled value function\par}
 \medskip
-Theorem~1 compares a value function fitted from sampled states with the
-best approximation available in the same class. Its proof uses the
-discounted state distribution both to choose the sample and to measure
-one-step errors. The occupancy lemma below is verified in Lean. The full
-probability bound remains open in the formalization.
+A value function fitted from sampled states competes with the best uniform
+approximation in its feature class. The guarantee holds simultaneously for
+every optimizer, including when the fit is nonunique.
 
-\section*{The sampled problem and the target bound}
+\section*{The sampled problem}
 Let \(\mathcal S,\mathcal A\) be finite, nonempty state and action sets,
 and let \(0<\alpha<1\) be the discount. Action \(a\) at state \(x\) costs
 \(g_{x,a}\in\R\) and moves to \(y\) with probability \(p(x,y,a)\).
@@ -53,24 +54,23 @@ by solving
 \end{aligned}
 \tag{18}
 \]
-\textbf{Theorem 1 (target).} Let \(\epsilon>0\), \(0<\delta<1\), and
-\(N\ge1\). With \(K=\max_x\|\Phi(x)\|_{\mathcal H}\) and
-\(\|g\|_\infty=\max_{x,a}|g_{x,a}|\), set
+\textbf{Theorem 1 (strengthened form).} Let \(\epsilon>0\), \(0<\delta<1\) and \(N\ge1\).
+Write \(K=\max_x\|\Phi(x)\|_{\mathcal H}\), \(\|g\|_\infty=\max_{x,a}|g_{x,a}|\), and
 \[
- \Xi=\bigl(4CK(1+\alpha)+4B(1-\alpha)+2\|g\|_\infty\bigr)
-            \bigl(1+\sqrt{2\ln(1/\delta)}\bigr).
+ D=4CK(1+\alpha)+4B(1-\alpha)+2\|g\|_\infty,\qquad
+ \Xi=D\bigl(1+\sqrt{2\ln(1/\delta)}\bigr).
 \]
-If \(N\ge\Xi^2/\epsilon^2\), Theorem~1 asserts that, with probability
-at least \(1-\delta-\delta^4\), an optimizer
-\((\widehat{\mathbf z},\widehat b,\widehat s)\) of (18) satisfies
-\[
- \bigl\|J^*-\widetilde J_{\widehat{\mathbf z},\widehat b}\bigr\|_{1,\nu}
+If \(N\ge\Xi^2/\epsilon^2\), then with probability at least \(1-\delta\),
+every fitted value function \(\widehat J\) obtained by solving (18) satisfies
+\begin{equation}
+ \|J^*-\widehat J\|_{1,\nu}
  \le \frac{3+\alpha}{1-\alpha}
        \inf_{\|\mathbf z\|_{\mathcal H}\le C,\,|b|\le B}
-       \bigl\|J^*-\widetilde J_{\mathbf z,b}\bigr\|_\infty
-       +\frac{4\epsilon}{1-\alpha}.
- \tag{19}
-\]
+       \|J^*-\widetilde J_{\mathbf z,b}\|_\infty
+       +\frac{2\epsilon}{1-\alpha}.
+ \tag{19$'$}\label{eq:main}
+\end{equation}
+A solution of (18) exists for every draw.
 
 \newpage
 \section*{Discounted occupancy and the Bellman residual}
@@ -126,47 +126,155 @@ limit. The sum is consequently its two-sided inverse. This proves the
 second formula in \eqref{eq:occ}.
 
 \newpage
-\section*{Balance, uniqueness and the residual}
-Multiplying \eqref{eq:occ} on the right by \(I-\alpha P_\mu\) gives
+\section*{From sampled slacks to value error}
+Multiplying (17) on the right by \(I-\alpha P_\mu\) gives the balance
+equation \eqref{eq:balance}. Conversely, multiplying that equation by the
+inverse uniquely determines \(\pi_{\mu,\nu}\). Since
+\(J_\mu=g_\mu+\alpha P_\mu J_\mu\), subtraction gives
 \[
-   \pi_{\mu,\nu}^\top(I-\alpha P_\mu)=(1-\alpha)\nu^\top.
+ J-J_\mu=(I-\alpha P_\mu)^{-1}(J-T_\mu J).
 \]
-Rearranging gives \eqref{eq:balance}. Conversely, any real row vector
-satisfying that balance equation must give the same product with
-\(I-\alpha P_\mu\). Multiplication by the inverse determines the row
-uniquely. In \eqref{eq:balance}, the first term accounts for time zero
-and the second for visits after one or more transitions.
+Averaging under \(\nu\) proves the signed identity \eqref{eq:residual}.
+The inverse is entrywise nonnegative by its series on the previous page.
+Writing \(u_+=\max\{u,0\}\) coordinatewise, we therefore also have
+\[
+ (J-J_\mu)_+\ \le\ (I-\alpha P_\mu)^{-1}(J-T_\mu J)_+ .
+\]
 
-\lead{From a one-step error to the initial error.}
-The series for \(J_\mu\) gives \(J_\mu=(I-\alpha P_\mu)^{-1}g_\mu\).
-Hence \(J_\mu\) is the unique solution of \(J_\mu=g_\mu+\alpha P_\mu J_\mu\).
-Subtracting this equality from the definition of the residual gives
+\lead{Which residual does the fit pay for?}
+Write \(r_\mu(J)=(J-T_\mu J)_+\) and \(r(J)=(J-TJ)_+\).
+Since \(TJ\le T_\mu J\), we have \(r_\mu(J)\le r(J)\). In (18), the least
+feasible slack at draw \(i\) is exactly \(r(J)(X_i)\). The objective strictly
+decreases with each slack, so using these least slacks gives the reduced
+objective \(\nu^\top J-2P_N r(J)/(1-\alpha)\), where
 \[
- (I-\alpha P_\mu)(J-J_\mu)
-     =J-\alpha P_\mu J-g_\mu=J-T_\mu J .
+ P_N f=\frac1N\sum_{i=1}^N f(X_i),\qquad Pf=\pi_{\mu^*,\nu}^\top f .
 \]
-Multiply on the left by \(\pi_{\mu,\nu}^\top\) and use the balance equation.
-The left side becomes \((1-\alpha)\nu^\top(J-J_\mu)\). Division by
-\(1-\alpha>0\) gives \eqref{eq:residual}. \hfill\(\square\)
+An optimizer exists. Projecting \(\mathbf z\) orthogonally onto the span of
+the finitely many \(\Phi(x)\) preserves every fitted value and weakly decreases
+the norm. The closed ball in this span and the interval \([-B,B]\) are
+compact. Both the reduced objective and the uniform approximation error
+are continuous there, so their maximum and minimum, respectively, are attained.
 
-\section*{How the lemma enters Theorem 1}
-For the optimal policy, \(J_{\mu^*}=J^*\). Write
-\(\Delta^*=(I-\alpha P_{\mu^*})^{-1}\) and let
-\(s_{\mu^*}(x)=\max\{J(x)-(T_{\mu^*}J)(x),0\}\) be the positive
-one-step residual. Applied to this vector, \eqref{eq:occ} gives
-\[
- \nu^\top\Delta^*s_{\mu^*}
-       =\frac{1}{1-\alpha}\pi_{\mu^*,\nu}^\top s_{\mu^*}.
-\]
-The left side weights the accumulated residual by the starting distribution.
-The right side averages a one-step residual under the law used to draw the
-states in (18). This is the substitution in the paper's inequality chain (26).
-The next deterministic step bounds overestimation by
-\(\Delta^*s_{\mu^*}\). The sampling estimates must then control the
-difference between the population and empirical residual means.
+\lead{A single deviation suffices.}
+Suppose that \(P r_{\mu^*}(J)\le P_Nr_{\mu^*}(J)+\epsilon\) for every
+admissible \(J\). Using
+\(|u|=-u+2u_+\) with \(u=\widehat J-J^*\), the positive-part inequality,
+and (17) with \(J_{\mu^*}=J^*\), gives
+\begin{align*}
+ \|J^*-\widehat J\|_{1,\nu}
+ &\le \nu^\top(J^*-\widehat J)+\frac{2}{1-\alpha}P r_{\mu^*}(\widehat J)\\
+ &\le \nu^\top(J^*-\widehat J)
+        +\frac{2}{1-\alpha}\bigl(P_Nr(\widehat J)+\epsilon\bigr)\\
+ &\le \nu^\top(J^*-V)+\frac{2}{1-\alpha}\bigl(P_Nr(V)+\epsilon\bigr)
+\end{align*}
+for every admissible \(V\). The last line uses optimality in the reduced
+objective. It holds for each optimizer on the very same sample.
 
 \newpage
-\section*{A two-state example}
+\section*{A pointwise bound for the comparator}
+Let \(V\) be any admissible comparison function. Each transition row is a
+probability vector. Changing a value function by at most \(d\) everywhere
+changes every one-step action value by at most \(\alpha d\). Taking the
+minimum over actions preserves this bound. Hence
+\(\|TV-TJ^*\|_\infty\le\alpha\|V-J^*\|_\infty\), and \(TJ^*=J^*\) gives
+\[
+ r(V)(x)\le |V(x)-J^*(x)|+|TJ^*(x)-TV(x)|
+           \le (1+\alpha)\|J^*-V\|_\infty .
+\]
+This inequality holds at every sampled state, including repeated draws.
+Also \(\nu^\top(J^*-V)\le\|J^*-V\|_\infty\). Substituting both bounds
+in the last line on the previous page leaves the coefficient
+\[
+ 1+\frac{2(1+\alpha)}{1-\alpha}=\frac{3+\alpha}{1-\alpha}.
+\]
+Taking the infimum over \(V\) yields \eqref{eq:main} on the stated
+deviation event. It remains to bound that event's probability.
+
+\section*{The size of the residual class}
+Fix a policy \(\mu\). For \(\widetilde J=\widetilde J_{\mathbf z,b}\) put
+\[
+ d_\mu(x)=\Phi(x)-\alpha\sum_y P_\mu(x,y)\Phi(y),\qquad
+ \|d_\mu(x)\|_{\mathcal H}\le K(1+\alpha).
+\]
+The norm bound follows because the transition weights sum to one. Then
+\[
+ r_\mu(\widetilde J)(x)=
+ \pos{\langle d_\mu(x),\mathbf z\rangle+(1-\alpha)b-g_\mu(x)} .
+\]
+In particular \(0\le r_\mu(\widetilde J)\le CK(1+\alpha)+B(1-\alpha)
++\|g\|_\infty\le D/2\). The same envelope holds for \(r(\widetilde J)\)
+by choosing a minimizing action at each state.
+
+For a fixed sample \(X\), define the one-sided empirical Rademacher complexity
+of a bounded function class \(\mathcal F\) by
+\[
+ \widehat R_N(\mathcal F;X)
+ =\E_\sigma\sup_{f\in\mathcal F}\frac1N\sum_{i=1}^N\sigma_i f(X_i),
+\]
+where the independent signs \(\sigma_i\) take values \(+1,-1\) with equal
+probability. For the linear term, Cauchy--Schwarz bounds the supremum by
+\(C\|\sum_i\sigma_i d_\mu(X_i)\|/N\). The expected squared norm is
+\(\sum_i\|d_\mu(X_i)\|^2\), since distinct signs have zero product in
+expectation. Thus the complexity is at most \(CK(1+\alpha)/\sqrt N\).
+The intercept similarly contributes at most \(B(1-\alpha)/\sqrt N\),
+using \(\E|\sum_i\sigma_i|\le\sqrt N\).
+
+\newpage
+\section*{One event for all fitted values}
+Let \(\mathcal F=\{r_{\mu^*}(\widetilde J_{\mathbf z,b}) :
+\|\mathbf z\|\le C,\ |b|\le B\}\), and let \(-\mathcal F=\{-f:f\in\mathcal F\}\).
+Taking the positive part after subtracting a fixed cost is 1-Lipschitz,
+as is its negative. Applying either map at each state cannot increase
+the one-sided complexity. To see this, condition on all signs except
+one. If \(a_j\) is the sum of the other terms for candidate \(j\) and
+\(u_j\) its remaining score, twice the conditional expected supremum is
+\[
+ \sup_{j,k}\{a_j+a_k+\varphi(u_j)-\varphi(u_k)\}
+ \le \sup_{j,k}\{a_j+a_k+|u_j-u_k|\}.
+\]
+Interchanging \(j,k\) shows that the right side equals the expression for
+the identity map. Repeating this for each coordinate removes the
+transformations. The supremum of a sum is bounded by the sum of the
+suprema, so the preceding page gives, for every \(X\),
+\[
+ \widehat R_N(-\mathcal F;X)
+ \le \frac{CK(1+\alpha)+B(1-\alpha)}{\sqrt N}
+ \le \frac{D}{2\sqrt N}.
+\]
+
+Set \(Z(X)=\sup_{f\in\mathcal F}(Pf-P_N f)\). It is measurable because
+there are finitely many possible samples. For an independent copy \(X'\)
+with empirical mean \(P_N'\), the supremum of expectations is bounded by the expectation of the supremum. Thus \(\E Z\le \E\sup_f(P_N'f-P_N f)\). Independently swapping \(X_i\)
+and \(X_i'\) preserves their joint law and inserts independent signs into
+the difference. Splitting the signed sum at the supremum and using
+symmetry of the signs gives
+\[
+ \E Z\le 2\,\E_X \widehat R_N(-\mathcal F;X)\le D/\sqrt N .
+\]
+
+Changing one observation changes \(Z\) by at most \(2D/N\), since
+\(|f|\le D\). The bounded-differences inequality for independent inputs
+with coordinate changes at most \(c_i\) gives
+\(\Prob(Z-\E Z\ge t)\le\exp(-2t^2/\sum_i c_i^2)\) for \(t>0\).
+For completeness, expose the observations one at a time. The successive
+increments of the conditional expectation of \(Z\) have conditional mean
+zero and conditional range of width at most \(c_i\). For a variable in an
+interval of width \(c_i\), the second derivative of its log moment-generating
+function is a variance under exponential tilting, at most \(c_i^2/4\).
+Integrating twice bounds each centered log moment-generating function
+by \(\lambda^2 c_i^2/8\). Iterated conditioning, followed by Markov's
+inequality with \(\lambda=4t/\sum_i c_i^2\), gives the stated tail.
+For \(D>0\), take \(c_i=2D/N\). With probability at least \(1-\delta\),
+\[
+ Z\le\frac{D}{\sqrt N}+D\sqrt{\frac{2\ln(1/\delta)}{N}}
+   =\frac{\Xi}{\sqrt N}\le\epsilon .
+\]
+For \(D=0\) all residuals vanish and the event has probability one.
+This proves \eqref{eq:main}. \hfill\(\square\)
+
+\newpage
+\section*{A two-state example of discounted occupancy}
 The states are \(s,t\), and the initial state is \(s\). From either state,
 action \(A\) costs \(1\) and moves to \(s\) or \(t\) with equal probability.
 Action \(B\) costs \(2\) and moves to \(t\) with certainty. The policy
@@ -202,23 +310,31 @@ Dividing by \(1-\alpha=1/2\) gives an initial error of \(1/3\). Direct
 evaluation at the starting state gives the same answer,
 \(J(s)-J_\mu(s)=3-8/3=1/3\).
 
-\section*{Relation to the original result}
-The paper introduces (17) with the optimal policy in (18). Its formula holds
-as printed, and the lemma proves it for every fixed policy. Appendix~B
-obtains Theorem~1 from the weighted Theorem~2 by setting its weight
-function \(\psi\) equal to one. The target on page~1 uses the confidence
-range \(0<\delta<1\) so the square root in \(\Xi\) is real. The paper's
-statement allows \(\delta>0\).
+\section*{Correction and comparison}
+Appendix B.2 assigns a comparator \(V\) the slack \((TV-V)_+\).
+For a single state with a self-transition, zero cost, \(\alpha=1/2\),
+and \(V=1\), we have \(TV=1/2\). This candidate is admissible with
+\(\Phi=0\), \(C=0\) and \(B=1\). The proposed slack is zero and violates
+\(1\le1/2+s\). The least feasible slack is \((V-TV)_+=1/2\).
 
-\smallskip
+At the same sample size, \eqref{eq:main} implies the original guarantee. With probability at least \(1-\delta-\delta^4\), every optimizer satisfies
+\begin{equation}
+ \|J^*-\widehat J\|_{1,\nu}
+ \le \frac{3+\alpha}{1-\alpha}
+       \inf_{\|\mathbf z\|_{\mathcal H}\le C,\,|b|\le B}
+       \|J^*-\widetilde J_{\mathbf z,b}\|_\infty+\frac{4\epsilon}{1-\alpha}.
+ \tag{19}
+\end{equation} The proof here uses the pointwise comparator
+bound for the ordinary sup norm. The weighted comparator in Theorem~2
+is a separate claim. We state the informative range \(0<\delta<1\);
+for \(\delta\ge1\) the printed probability lower bound is nonpositive.
+
 {\small
-\textbf{Source.} N.~Bhat, V.~F.~Farias, C.~C.~Moallemi and A.~T.~Zheng,
-\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=12}{\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
-August 29, 2022, \S\S3.2--3.3 and Appendix~B.\par
-\textbf{Formal proof.}
-\href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Occupancy.lean}{Lean occupancy and residual identities}
-and \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Examples/Occupancy.lean}{two-state example}.
-The series proof applies
-\href{https://github.com/LeanEconomics/DynamicProgramming/blob/9d4783f3fb282444f8f3a91c4e6439293dd4bacc/FiniteStates/MarkovDecisionProcesses/MarkovDecisionProcesses/MDP.lean}{Robert Kirkby's policy-evaluation theorems}
-to each state's indicator function.}
+\textbf{Sources.}
+\href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=13}{Bhat, Farias, Moallemi and Zheng, Theorem~1 and Appendix~B}.
+\href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Theorem1.lean}{Lean theorem and optimizer existence},
+\href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Approximation.lean}{deterministic bound},
+\href{https://github.com/nikhilpb/kadp/blob/main/Kadp/UniformDeviation.lean}{concentration},
+\href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Examples/Theorem1.lean}{slack example},
+and \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Examples/Occupancy.lean}{occupancy example}.}
 \end{document}
