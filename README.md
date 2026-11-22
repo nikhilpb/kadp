@@ -1,12 +1,12 @@
 # Checking the Kernel ADP proofs
 
-Each proof has its own self-contained LaTeX source and PDF in `proofs/`, with a link to the corresponding Lean theorem.
+The self-contained notes in `proofs/` group supporting lemmas with the results they establish. Each note includes LaTeX, a PDF and links to the corresponding Lean proofs.
 
 **Strong duality for sampled value-function approximation.** The proof recovers a primal optimizer from any dual minimizer, works through an example at the penalty threshold, and explains the corrections to Proposition 1. [PDF](proofs/proposition-1.pdf) · [LaTeX source](proofs/proposition-1.tex) · [Lean theorem](Kadp/PrimalAttainment.lean)
 
 **Kernel evaluation and the greedy policy.** The kernel program recovers the fitted value up to its intercept and gives every greedy action, including ties. A two-state example shows why the current state belongs in the neighborhood used to compute the coefficients. [PDF](proofs/kernel-policy.pdf) · [LaTeX source](proofs/kernel-policy.tex) · [Lean theorem](Kadp/KernelPolicy.lean) · [Checked example](Kadp/Examples/KernelPolicy.lean)
 
-**Discounted state occupancy and the Bellman residual.** For any fixed policy, the discounted state distribution uniquely solves a balance equation. Averaging signed residuals under this distribution recovers the expected initial value error. The two-state example computes both sides. [PDF](proofs/discounted-occupancy.pdf) · [LaTeX source](proofs/discounted-occupancy.tex) · [Lean theorems](Kadp/Occupancy.lean) · [Checked example](Kadp/Examples/Occupancy.lean)
+**Theorem 1. Approximation guarantee for the sampled value function (in progress).** The note states the sampled optimization problem and target bound. Its first verified lemma proves the discounted occupancy and residual identities, with a two-state example. The full approximation guarantee remains open. [PDF](proofs/theorem-1.pdf) · [LaTeX source](proofs/theorem-1.tex) · [Lean lemma](Kadp/Occupancy.lean) · [Checked example](Kadp/Examples/Occupancy.lean)
 
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 
@@ -43,5 +43,5 @@ Each note builds independently from the repository root with Tectonic.
 ```sh
 tectonic proofs/proposition-1.tex
 tectonic proofs/kernel-policy.tex
-tectonic proofs/discounted-occupancy.tex
+tectonic proofs/theorem-1.tex
 ```

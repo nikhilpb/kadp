@@ -14,7 +14,7 @@ Page numbers below are the printed pages of the August 29, 2022 version. Status 
 | Claim | Hypotheses and conclusion | Proof dependencies | Status |
 | --- | --- | --- | --- |
 | Proposition 1, p. 8 | For the sampled programs, both optima are finite, attained and equal. An optimal multiplier recovers a primal weight by (10). | (6)–(10), Appendix A | **Refuted as printed.** The replacement is proved in Lean, including equality at the threshold. |
-| Theorem 1, p. 13 | At the sample threshold, an optimizer of (18) has $\nu$-weighted absolute error bounded by $(3+\alpha)/(1-\alpha)$ times the best admissible sup-norm error plus $4\epsilon/(1-\alpha)$, with probability at least $1-\delta-\delta^4$. | Theorem 2 with $\psi=1$ | Open |
+| Theorem 1, p. 13 | At the sample threshold, an optimizer of (18) has $\nu$-weighted absolute error bounded by $(3+\alpha)/(1-\alpha)$ times the best admissible sup-norm error plus $4\epsilon/(1-\alpha)$, with probability at least $1-\delta-\delta^4$. | Theorem 2 with $\psi=1$ | Open. The [Theorem 1 writeup](../proofs/theorem-1.pdf) includes the verified occupancy lemma. |
 | Proposition 2, p. 18 | Every feasible suboptimal point of (9) admits a feasible strict descent direction with exactly two nonzero coordinates. | Gram positivity in (7), row caps, mass equality, Lemma 4 and Appendix D | Open |
 | Theorem 2, p. 28 | Same optimizer, sample threshold and confidence as Theorem 1. Bound (25) takes the infimum over admissible $z,b$ and $\psi\ge1$ of the weighted sup-error times $\nu^\top\psi+2(\pi_{\mu^*,\nu}^\top\psi)(1+\alpha\beta(\psi))/(1-\alpha)$, then adds $4\epsilon/(1-\alpha)$. Here $\beta(\psi)=\max_{x,a}(P_a\psi)(x)/\psi(x)$. | (17), (18), (26), Lemma 3, Theorem 3, SALP residual bounds | Open |
 | Lemma 1, p. 29 | For an i.i.d. sample and class uniformly bounded in absolute value by $B$, the event $\sup_f(Pf-P_N f)\ge R_N+\sqrt{2B^2\ln(1/\delta)/N}$ has probability at most $\delta$. | Appendix C, symmetrization and bounded differences | Open |
@@ -61,7 +61,7 @@ For a realized finite sample and a real feature kernel, (12) and (13) are the Gr
 
 ## Discounted occupancy and the signed residual
 
-**Equation (17) holds as printed.** Let $P_\mu$ be the row-stochastic transition matrix of a fixed policy in a finite MDP, $0<\alpha<1$, and $\nu$ any initial probability vector. The two expressions for $\pi_{\mu,\nu}$ agree, their entries are nonnegative and sum to one, and the balance equation has a unique real row solution. For every candidate $J$, the signed initial error is $\nu^\top(J-J_\mu)=\pi_{\mu,\nu}^\top(J-T_\mu J)/(1-\alpha)$. Taking an optimal policy recovers the paper’s sampling law. [Standalone proof](../proofs/discounted-occupancy.pdf) · [Lean module](../Kadp/Occupancy.lean)
+**Equation (17) holds as printed.** Let $P_\mu$ be the row-stochastic transition matrix of a fixed policy in a finite MDP, $0<\alpha<1$, and $\nu$ any initial probability vector. The two expressions for $\pi_{\mu,\nu}$ agree, their entries are nonnegative and sum to one, and the balance equation has a unique real row solution. For every candidate $J$, the signed initial error is $\nu^\top(J-J_\mu)=\pi_{\mu,\nu}^\top(J-T_\mu J)/(1-\alpha)$. Taking an optimal policy recovers the paper’s sampling law. [Occupancy lemma in the Theorem 1 writeup](../proofs/theorem-1.pdf) · [Lean module](../Kadp/Occupancy.lean)
 
 | Claim | Lean declarations in `Kadp.Occupancy` |
 | --- | --- |

@@ -4,7 +4,7 @@
 \usepackage{xcolor}
 \definecolor{link}{HTML}{205973}
 \usepackage[colorlinks=true,linkcolor=link,urlcolor=link]{hyperref}
-\hypersetup{pdftitle={Discounted state occupancy and the Bellman residual}}
+\hypersetup{pdftitle={Theorem 1. An approximation guarantee for the sampled value function}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
 \raggedbottom
@@ -12,60 +12,98 @@
 \newcommand{\lead}[1]{\par\smallskip\noindent\textbf{#1}\enspace}
 
 \begin{document}
-{\LARGE\bfseries Discounted state occupancy\\[2pt] and the Bellman residual\par}
+{\LARGE\bfseries Theorem 1. An approximation guarantee\\[2pt] for the sampled value function\par}
 \medskip
-For a fixed policy, the error in an approximate cost-to-go can be recovered
-exactly from its one-step errors. The weight on each state is the fraction
-of discounted time the policy is expected to spend there. This distribution has a
-balance equation that determines it uniquely.
+Theorem~1 compares a value function fitted from sampled states with the
+best approximation available in the same class. Its proof uses the
+discounted state distribution both to choose the sample and to measure
+one-step errors. The occupancy lemma below is verified in Lean. The full
+probability bound remains open in the formalization.
 
-\section*{A fixed policy and its one-step error}
-Let \(\mathcal S\) and \(\mathcal A\) be finite, nonempty sets of states and
-actions. At state \(x\), action \(a\) costs \(g_{x,a}\in\R\) and moves to
-state \(y\) with probability \(p(x,y,a)\). Fix a policy \(\mu\) that chooses
-one action \(\mu(x)\) in each state. Its cost vector and transition matrix are
+\section*{The sampled problem and the target bound}
+Let \(\mathcal S,\mathcal A\) be finite, nonempty state and action sets,
+and let \(0<\alpha<1\) be the discount. Action \(a\) at state \(x\) costs
+\(g_{x,a}\in\R\) and moves to \(y\) with probability \(p(x,y,a)\).
+The Bellman operator for cost minimization is
 \[
-  g_\mu(x)=g_{x,\mu(x)},\qquad
-  P_\mu(x,y)=p(x,y,\mu(x)),\qquad \sum_y P_\mu(x,y)=1.
+ (TJ)(x)=\min_{a\in\mathcal A}
+   \left\{g_{x,a}+\alpha\sum_{y\in\mathcal S}p(x,y,a)J(y)\right\}.
 \]
-Throughout, \(\alpha\in(0,1)\) is the discount factor. Values are column
-vectors. An initial distribution \(\nu\) has \(\nu_x\ge0\) and
-\(\sum_x\nu_x=1\). We write \(\nu^\top\) for its row vector, so
-\(\nu^\top f=\sum_x\nu_x f(x)\) is the expected value of \(f\) at the start.
+Write \(J^*\) for the optimal discounted cost-to-go and fix an optimal policy
+\(\mu^*\). Let \(\nu\) be an initial probability distribution. For any
+value vector \(f\), write \(\nu^\top f=\sum_x\nu_x f(x)\),
+\(\|f\|_{1,\nu}=\sum_x\nu_x|f(x)|\), and \(\|f\|_\infty=\max_x|f(x)|\).
 
-Starting from \(x\), the expected cost at time \(t\) is \((P_\mu^t g_\mu)(x)\),
-where \(P_\mu^0=I\), the identity matrix. For a proposed cost-to-go \(J\),
-the true discounted cost \(J_\mu\) and the one-step update \(T_\mu J\) are
+A feature map \(\Phi\) takes states into a real Hilbert space \(\mathcal H\).
+For radii \(C,B\ge0\), the candidate functions are
+\(\widetilde J_{\mathbf z,b}(x)=\langle\Phi(x),\mathbf z\rangle+b\),
+with \(\|\mathbf z\|_{\mathcal H}\le C\) and \(|b|\le B\).
+Draw \(X_1,\ldots,X_N\) independently from \(\pi_{\mu^*,\nu}\), the
+discounted state distribution defined in \eqref{eq:occ}. Fit the parameters
+by solving
 \[
- J_\mu=\sum_{t=0}^{\infty}\alpha^t P_\mu^t g_\mu,
- \qquad T_\mu J=g_\mu+\alpha P_\mu J .
+\begin{aligned}
+ \operatorname{maximize}_{\mathbf z,b,s}\quad&
+ \nu^\top\widetilde J_{\mathbf z,b}
+       -\frac{2}{(1-\alpha)N}\sum_{i=1}^N s_i\\
+ \text{subject to}\quad&
+ \widetilde J_{\mathbf z,b}(X_i)\le (T\widetilde J_{\mathbf z,b})(X_i)+s_i,
+ \quad s_i\ge0 \quad (1\le i\le N),\\
+ &\|\mathbf z\|_{\mathcal H}\le C,\quad |b|\le B .
+\end{aligned}
+\tag{18}
 \]
-The Bellman residual \(J-T_\mu J\) is positive at a state when \(J\)
-exceeds the cost of taking one policy step and then using \(J\) thereafter.
+\textbf{Theorem 1 (target).} Let \(\epsilon>0\), \(0<\delta<1\), and
+\(N\ge1\). With \(K=\max_x\|\Phi(x)\|_{\mathcal H}\) and
+\(\|g\|_\infty=\max_{x,a}|g_{x,a}|\), set
+\[
+ \Xi=\bigl(4CK(1+\alpha)+4B(1-\alpha)+2\|g\|_\infty\bigr)
+            \bigl(1+\sqrt{2\ln(1/\delta)}\bigr).
+\]
+If \(N\ge\Xi^2/\epsilon^2\), Theorem~1 asserts that, with probability
+at least \(1-\delta-\delta^4\), an optimizer
+\((\widehat{\mathbf z},\widehat b,\widehat s)\) of (18) satisfies
+\[
+ \bigl\|J^*-\widetilde J_{\widehat{\mathbf z},\widehat b}\bigr\|_{1,\nu}
+ \le \frac{3+\alpha}{1-\alpha}
+       \inf_{\|\mathbf z\|_{\mathcal H}\le C,\,|b|\le B}
+       \bigl\|J^*-\widetilde J_{\mathbf z,b}\bigr\|_\infty
+       +\frac{4\epsilon}{1-\alpha}.
+ \tag{19}
+\]
 
-\section*{The occupancy and residual identities}
-\textbf{Proposition.} For every \(\mu\) and \(\nu\) as above, the row vector
-\begin{equation}
+\newpage
+\section*{Discounted occupancy and the Bellman residual}
+Fix any policy \(\mu\), and set \(g_\mu(x)=g_{x,\mu(x)}\) and
+\(P_\mu(x,y)=p(x,y,\mu(x))\). Its expected cost vector and its one-step
+update of a candidate \(J\) are
+\[
+ J_\mu=\sum_{t=0}^\infty\alpha^tP_\mu^t g_\mu,\qquad
+ T_\mu J=g_\mu+\alpha P_\mu J ,
+\]
+where \(P_\mu^0=I\), the identity matrix. The residual \(J-T_\mu J\)
+measures how far the proposed cost exceeds its one-step prediction.
+
+\textbf{Lemma (discounted occupancy).} For every \(\mu\) and \(\nu\) as above, the row vector
+\begin{align}
  \pi_{\mu,\nu}^{\top}
  =(1-\alpha)\sum_{t=0}^{\infty}\alpha^t\nu^\top P_\mu^t
  =(1-\alpha)\nu^\top(I-\alpha P_\mu)^{-1}
- \label{eq:occ}
-\end{equation}
+ \tag{17}\label{eq:occ}
+\end{align}
 is a probability distribution. It is the unique real row vector satisfying
-\begin{equation}
+\begin{align}
  \pi_{\mu,\nu}^{\top}=(1-\alpha)\nu^\top+\alpha\pi_{\mu,\nu}^{\top}P_\mu .
- \label{eq:balance}
-\end{equation}
+ \tag{B}\label{eq:balance}
+\end{align}
 For every \(J\in\R^{\mathcal S}\), the expected initial value error satisfies
-\begin{equation}
+\begin{align}
  \nu^\top(J-J_\mu)
    =\frac{1}{1-\alpha}\,\pi_{\mu,\nu}^{\top}(J-T_\mu J).
- \label{eq:residual}
-\end{equation}
+ \tag{R}\label{eq:residual}
+\end{align}
 
-\newpage
-\section*{Proof}
-\lead{The distribution of discounted visits.}
+\lead{Proof. The distribution of discounted visits.}
 The row vector \(\nu^\top P_\mu^t\) is the state distribution at time \(t\).
 Indeed, multiplying a probability row by \(P_\mu\) preserves
 nonnegativity and total mass. The coefficients \((1-\alpha)\alpha^t\)
@@ -87,6 +125,8 @@ many states, so multiplication by \(I-\alpha P_\mu\) commutes with the
 limit. The sum is consequently its two-sided inverse. This proves the
 second formula in \eqref{eq:occ}.
 
+\newpage
+\section*{Balance, uniqueness and the residual}
 Multiplying \eqref{eq:occ} on the right by \(I-\alpha P_\mu\) gives
 \[
    \pi_{\mu,\nu}^\top(I-\alpha P_\mu)=(1-\alpha)\nu^\top.
@@ -108,6 +148,22 @@ Subtracting this equality from the definition of the residual gives
 Multiply on the left by \(\pi_{\mu,\nu}^\top\) and use the balance equation.
 The left side becomes \((1-\alpha)\nu^\top(J-J_\mu)\). Division by
 \(1-\alpha>0\) gives \eqref{eq:residual}. \hfill\(\square\)
+
+\section*{How the lemma enters Theorem 1}
+For the optimal policy, \(J_{\mu^*}=J^*\). Write
+\(\Delta^*=(I-\alpha P_{\mu^*})^{-1}\) and let
+\(s_{\mu^*}(x)=\max\{J(x)-(T_{\mu^*}J)(x),0\}\) be the positive
+one-step residual. Applied to this vector, \eqref{eq:occ} gives
+\[
+ \nu^\top\Delta^*s_{\mu^*}
+       =\frac{1}{1-\alpha}\pi_{\mu^*,\nu}^\top s_{\mu^*}.
+\]
+The left side weights the accumulated residual by the starting distribution.
+The right side averages a one-step residual under the law used to draw the
+states in (18). This is the substitution in the paper's inequality chain (26).
+The next deterministic step bounds overestimation by
+\(\Delta^*s_{\mu^*}\). The sampling estimates must then control the
+difference between the population and empirical residual means.
 
 \newpage
 \section*{A two-state example}
@@ -147,17 +203,18 @@ evaluation at the starting state gives the same answer,
 \(J(s)-J_\mu(s)=3-8/3=1/3\).
 
 \section*{Relation to the original result}
-Equation (17) of Bhat, Farias, Moallemi and Zheng defines the sampling law
-for an optimal policy \(\mu^*\). Taking \(\mu=\mu^*\) in \eqref{eq:occ}
-gives their formula as printed. The proof applies to any fixed policy and
-allows zeros in the initial distribution. Equation \eqref{eq:residual}
-makes explicit how this sampling law weights signed one-step errors.
+The paper introduces (17) with the optimal policy in (18). Its formula holds
+as printed, and the lemma proves it for every fixed policy. Appendix~B
+obtains Theorem~1 from the weighted Theorem~2 by setting its weight
+function \(\psi\) equal to one. The target on page~1 uses the confidence
+range \(0<\delta<1\) so the square root in \(\Xi\) is real. The paper's
+statement allows \(\delta>0\).
 
 \smallskip
 {\small
 \textbf{Source.} N.~Bhat, V.~F.~Farias, C.~C.~Moallemi and A.~T.~Zheng,
 \href{https://moallemi.com/ciamac/papers/kernel-adp-2012.pdf\#page=12}{\emph{Non-parametric Approximate Dynamic Programming via the Kernel Method}},
-August 29, 2022, \S3.2.\par
+August 29, 2022, \S\S3.2--3.3 and Appendix~B.\par
 \textbf{Formal proof.}
 \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Occupancy.lean}{Lean occupancy and residual identities}
 and \href{https://github.com/nikhilpb/kadp/blob/main/Kadp/Examples/Occupancy.lean}{two-state example}.
