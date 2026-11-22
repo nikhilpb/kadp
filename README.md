@@ -1,8 +1,8 @@
 # Checking the Kernel ADP proofs
 
-*Kernel Approximate Dynamic Programming: Formalized Results and Corrections* collects the mathematical results from the paper as their proofs are checked in Lean. [Collected results (PDF)](proofs/kernel-adp-results.pdf) · [LaTeX source](proofs/kernel-adp-results.tex)
+Each proof has its own self-contained LaTeX source and PDF in `proofs/`, with a link to the corresponding Lean theorem.
 
-The first section proves strong duality for the sampled value-function approximation problem and recovers a primal optimizer from any dual minimizer. It includes a worked example and explains the corrections to the paper's Proposition 1. [Lean theorem](Kadp/PrimalAttainment.lean)
+**Strong duality for sampled value-function approximation.** The proof recovers a primal optimizer from any dual minimizer, works through an example at the penalty threshold, and explains the corrections to Proposition 1. [PDF](proofs/proposition-1.pdf) · [LaTeX source](proofs/proposition-1.tex) · [Lean theorem](Kadp/PrimalAttainment.lean)
 
 On macOS with Homebrew, install Elan once. It provides the `lean` and `lake` commands and selects the Lean version from this project's `lean-toolchain` file. [Homebrew formula](https://formulae.brew.sh/formula/elan-init)
 
@@ -28,4 +28,4 @@ printf '%s\n' 'import Kadp' '#print axioms Kadp.SampledRSALP.strongDuality' | la
 
 The [claim index](audit/claims.md) maps the two counterexamples, the corrected proposition, and the open claims to their evidence. The [plan](PLAN.md) covers the remaining work.
 
-To rebuild the PDF from the repository root, run `tectonic proofs/kernel-adp-results.tex`.
+To rebuild the strong-duality note from the repository root, run `tectonic proofs/proposition-1.tex`.

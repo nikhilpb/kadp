@@ -33,7 +33,7 @@ Both instances use one state, action and draw, unit transition and distribution 
 | $g=0$, $\kappa=1$ | The primal has no finite upper bound and the dual feasible set is empty. | `primal_unbounded`, `dual_infeasible` |
 | $g=1$, $\kappa=4$ | The primal maximum is $2$ and the dual minimum is $4$. Both are attained. | `primal_maximum_two`, `dual_minimum_four` |
 
-**Replacement proposition.** Assume $\kappa\ge 1/(1-\alpha)$. Both optima are attained, the normalized dual value equals the primal maximum, and every minimizing multiplier recovers the unique optimal primal weight by (10). Section 1 of the collected results defines the programs, proves the theorem, and works an equality-case example with nonzero features. Its closing comparison gives the conversion between the objectives. [Collected results, §1](../proofs/kernel-adp-results.pdf)
+**Replacement proposition.** Assume $\kappa\ge 1/(1-\alpha)$. Both optima are attained, the normalized dual value equals the primal maximum, and every minimizing multiplier recovers the unique optimal primal weight by (10). The standalone proof note defines the programs, proves the theorem, and works an equality-case example with nonzero features. Its closing comparison gives the conversion between the objectives. [Standalone proof](../proofs/proposition-1.pdf)
 
 **Lean verification.** The main theorem `Kadp.SampledRSALP.strongDuality` proves attainment, value equality and recovery under the penalty hypothesis. The companion theorem `correctedProposition1` also records unboundedness and dual infeasibility below the threshold.
 
