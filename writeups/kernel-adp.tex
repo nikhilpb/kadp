@@ -10,12 +10,13 @@
 
 \setlength{\parindent}{1.2em}
 \setlength{\parskip}{3pt plus 1pt}
+\setlength{\emergencystretch}{2.5em}
 \setcounter{tocdepth}{2}
 \raggedbottom
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\textcolor{ink}{Kernel Approximate Dynamic Programming}}
+\fancyhead[L]{\small\textcolor{ink}{Kernel ADP}}
 \fancyhead[R]{\small\textcolor{ink}{\nouppercase{\leftmark}}}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.3pt}
@@ -35,10 +36,24 @@
 \newcommand{\pos}[1]{(#1)_+}
 \newcommand{\defeq}{\triangleq}
 
+\ExplSyntaxOn
+\tl_new:N \l_kadp_code_tl
+\NewDocumentCommand{\leancode}{m}{%
+  \begingroup
+    \upshape\ttfamily
+    \tl_set:Nn \l_kadp_code_tl { #1 }
+    \tl_replace_all:Nnn \l_kadp_code_tl { \_ } { \textunderscore \allowbreak }
+    \tl_replace_all:Nnn \l_kadp_code_tl { . } { . \allowbreak }
+    \tl_replace_all:Nnn \l_kadp_code_tl { / } { / \allowbreak }
+    \tl_use:N \l_kadp_code_tl
+  \endgroup
+}
+\ExplSyntaxOff
+
 \newcommand{\leanrepo}{https://github.com/nikhilpb/kadp/blob/main/lean}
-\newcommand{\leanfile}[1]{\href{\leanrepo/#1.lean}{\texttt{lean/#1.lean}}}
-\newcommand{\leandecl}[2]{\href{\leanrepo/#1.lean}{\texttt{#2}}}
-\newcommand{\leanref}[1]{\par\smallskip\noindent{\normalfont\small\emph{Lean formalization:} #1.}\par}
+\newcommand{\leanfile}[1]{\href{\leanrepo/#1.lean}{\leancode{lean/#1.lean}}}
+\newcommand{\leandecl}[2]{\href{\leanrepo/#1.lean}{\leancode{#2}}}
+\newcommand{\leanref}[1]{\par\smallskip\noindent{\normalfont\small\raggedright\emph{Lean formalization:} #1.\par}}
 
 % Theorem environments preserving original paper numbering
 \makeatletter
@@ -650,7 +665,7 @@ Table~\ref{tab:corrections} summarizes the full register of corrections; Subsect
 \caption{Summary of corrections to Bhat, Farias, Moallemi, and Zheng (August 29, 2022).}
 \label{tab:corrections}
 \footnotesize
-\begin{tabular}{@{}p{0.18\linewidth}p{0.11\linewidth}p{0.44\linewidth}p{0.21\linewidth}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}p{0.08\linewidth}>{\raggedright\arraybackslash}p{0.40\linewidth}>{\raggedright\arraybackslash}p{0.28\linewidth}@{}}
 \toprule
 \textbf{Location} & \textbf{Severity} & \textbf{Defect and Repair} & \textbf{Lean Evidence} \\
 \midrule
@@ -691,7 +706,7 @@ App.~B.1 \& C, Lem.~1 & Medium & Closed tail fails at $B=0$ ($\Prob=1$); uncount
 
 \emph{Corrected statement and downstream impact.} Proposition~\ref{prop:1} requires $\kappa \ge 1/(1-\alpha)$ and equates $\max\eqref{eq:6}$ with $\min_{\lambda\in\Lambda} G(\lambda) = (\min\eqref{eq:9} - S + \frac{1}{2}\norm{m}_{\mathcal{H}}^2)/\Gamma$. Because this conversion is strictly increasing affine ($\Gamma > 0$), the optimal dual multipliers $\lambda^*$ of~\eqref{eq:9} are unaffected, preserving~\eqref{eq:10}, the kernel policy (Proposition~\ref{prop:2B}), and the active-set algorithm (Section~\ref{sec:numerical}). Moreover, the analysis of Section~\ref{sec:guarantees} uses $\kappa = 2/(1-\alpha)$, which satisfies $\kappa \ge 1/(1-\alpha)$. Finally, Appendix~A of~\cite{BFMZ22} invoked Luenberger's duality theorem without proving boundedness of the primal optimizer set in $b$ and $s$; our Appendix~\ref{app:prop1} supplies a self-contained proof via the exact duality gap and cutoff allocation (\leandecl{Allocation}{Kadp.exists\_cutoff\_allocation}).
 
-\subsubsection*{M2. Doubled Quadratic and Cross Terms in the Active-Set Sub-problem (\S4.2, eq.~(22), p.~18)}
+\subsubsection*{M2. Doubled Quadratic and Cross Terms in the Active-Set Subproblem (\S4.2, eq.~(22), p.~18)}
 \emph{Original statement.} Given active coordinates $\mathcal{B} = \{p,q\}$ and frozen coordinates $\lambda_{\bar{\mathcal{B}}}^{(t-1)}$, equation~(22) in~\S4.2 of~\cite{BFMZ22} asks the algorithm to minimize
 \[
  \sum_{(x,a)\in\mathcal{B}}\sum_{(x',a')\in\mathcal{B}} \lambda_{x',a'} Q(x,a,x',a')\lambda_{x,a}
@@ -710,7 +725,7 @@ claiming that solving this sub-problem produces a strictly lower objective value
 
 \emph{Corrected statement and downstream impact.} Theorem~\ref{thm:1} and Theorem~\ref{thm:2} are unaffected (they assume $\rho=\pi$). For approximate sampling, Proposition~\ref{prop:3D}(iii) bypasses empirical coupling by applying the density bound at the population level $\pi^\top r_{\mu^*}(\widehat{J}) \le (1+k)\rho^\top r_{\mu^*}(\widehat{J})$ after uniform concentration under $\rho^{\otimes N}$, yielding the rigorous error term $\frac{2}{1-\alpha}((2+k)\epsilon + k\overline{s})$ (\leandecl{WeightedSampling}{Kadp.SamplingLaw.ratio\_weighted\_infimum}).
 
-\subsubsection*{M4. Penalized versus Radius-Constrained Value Shift and Critical Box Non-Containment (\S3.1, p.~11)}
+\subsubsection*{M4. Penalized versus Radius-Constrained Value Shift and Box Omission (\S3.1, p.~11)}
 \emph{Original statement.} Section~3.1 states that for any $\Gamma > 0$, there exists $C \ge 0$ such that for all sufficiently large $B$, programs~\eqref{eq:5} and~\eqref{eq:15} have the same optimal solutions and optimal value.
 
 \emph{Failure and formal witness.} First, dropping $-\frac{\Gamma}{2}\norm{\mathbf{z}}_{\mathcal{H}}^2$ changes the optimal value by $\frac{\Gamma}{2}C(\Gamma)^2$ whenever $\mathbf{z}^* \ne 0$: in \leandecl{Regularization}{Kadp.Regularization.Example.no\_radii\_with\_common\_optimizer\_and\_value}, a two-state problem with unique optimal weight $z^*=1$ ($\Gamma=1$) attains $-3/2$ in~\eqref{eq:5} and $-1$ in~\eqref{eq:15} at $C=1$, and no radii $(C,B)$ can match both an optimizer and its numerical value. Second, when $\kappa(1-\alpha) = 1$, translating $b\mapsto b+t$, $s_x\mapsto s_x + (1-\alpha)t$ ($t\ge 0$) leaves~\eqref{eq:5} optimal, so every finite box $|b|\le B$ omits optimizers of~\eqref{eq:5} (\leandecl{Regularization}{Kadp.Regularization.Data.critical\_missing\_optimizer}). Third, when $\kappa(1-\alpha) < 1$, program~\eqref{eq:5} has no optimum at all.
@@ -770,7 +785,7 @@ The accompanying Lean~4 formalization (\url{https://github.com/nikhilpb/kadp}) c
 \caption{Mapping of results in this monograph to verified Lean~4 modules.}
 \label{tab:leanmap}
 \footnotesize
-\begin{tabular}{@{}p{0.44\linewidth}p{0.50\linewidth}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.44\linewidth}>{\raggedright\arraybackslash}p{0.50\linewidth}@{}}
 \toprule
 \textbf{Result / Topic} & \textbf{Lean~4 Modules (\nolinkurl{lean/})} \\
 \midrule
@@ -789,7 +804,7 @@ Lemma~\ref{lem:4}, Proposition~\ref{prop:2}, and active-set update~\eqref{eq:22p
 \end{tabular}
 \end{table}
 
-From a fresh checkout of the repository, running \texttt{lake exe cache get Mathlib \&\& lake build} builds every proof module, and replaying all modules through Lean's external kernel verifier (\texttt{leanchecker}) together with \texttt{\#print axioms} confirms that every public theorem, counterexample, and witness depends only on standard constructive/classical foundations.
+From a fresh checkout of the repository, running \texttt{lake exe cache get Mathlib} followed by \texttt{lake build} builds every proof module, and replaying all modules through Lean's external kernel verifier (\texttt{leanchecker}) together with \texttt{\#print axioms} confirms that every public theorem, counterexample, and witness depends only on standard constructive/classical foundations.
 
 \clearpage
 \appendix
@@ -894,7 +909,7 @@ Because $\lambda^*$ minimizes $L$ over $\Lambda$, we have $L(\lambda^*) \le L(k)
  = \bigl(G(\lambda^*) - L(\lambda^*)\bigr) + b^* - q\sum_i s_i^*
  \ge G(\lambda^*).
 \]
-Combined with weak duality, $P(\mathbf{z}^*,b^*,s^*) = G(\lambda^*)$ (\leandecl{PrimalAttainment}{Kadp.SampledRSALP.primal\_attains\_of\_dual\_minimizer}, \leandecl{PrimalAttainment}{Kadp.SampledRSALP.strongDuality}, \leandecl{PrimalAttainment}{Kadp.SampledRSALP.correctedProposition1}). By Step~4, every optimal primal--dual pair satisfies~\eqref{eq:10}.
+Combined with weak duality, $P(\mathbf{z}^*,b^*,s^*) = G(\lambda^*)$ (\leandecl{PrimalAttainment}{Kadp.SampledRSALP.primal\_attains\_of\_dual\_minimizer}, \leandecl{PrimalAttainment}{strongDuality}, and \leandecl{PrimalAttainment}{correctedProposition1}). By Step~4, every optimal primal--dual pair satisfies~\eqref{eq:10}.
 \end{proof}
 
 \begin{example}[Witnesses to Proposition~\ref{prop:1} and a threshold example]\label{ex:prop1}
@@ -915,12 +930,12 @@ By definition, $q_{x,y,a} = \mathbf{1}_{\{x=y\}} - \alpha p(x,y,a)$ vanishes whe
 Writing $F_0(\lambda) = \frac{1}{2}\lambda^\top Q\lambda + R^\top\lambda$ for the objective with $S=0$, \eqref{eq:A_norm} gives $F_0(\lambda) = \Gamma G(\lambda) - \frac{1}{2}\norm{m}_{\mathcal{H}}^2$ (\leandecl{KernelPolicy}{Kadp.SampledRSALP.kernelObjective\_normalization}). Since $\kappa\ge 1/(1-\alpha)$ and $\Gamma>0$, $\Lambda$ is nonempty and compact, so $F_0$ attains its minimum at some $\lambda^*\in\Lambda$ (\leandecl{KernelPolicy}{Kadp.SampledRSALP.exists\_kernel\_minimizer}), which also minimizes $F$ and $G$ on $\Lambda$.
 
 Now let $\lambda^*$ minimize $F_0$ on $\Lambda$ and let $(\mathbf{z}^*,b^*,s^*)$ maximize~\eqref{eq:6}. By Proposition~\ref{prop:1}, $\mathbf{z}^* = (m - v(\lambda^*))/\Gamma$. Taking the inner product of~\eqref{eq:10} with $\Phi(x)$ at any query state $x\in\mathcal{S}$ and using symmetry of $K$ gives
-\[
+\begin{align*}
  \tilde{J}_{\mathbf{z}^*,b^*}(x)
- = \ip{\Phi(x)}{\mathbf{z}^*} + b^*
- = \frac{1}{\Gamma}\left[\frac{1}{N}\sum_{j=1}^N w_{X_j}K(x,X_j) - \sum_{i,a}\lambda^*_{ia}\Bigl(K(x,X_i) - \alpha\sum_y p(X_i,y,a)K(y,x)\Bigr)\right] + b^*
- = \widehat{J}_{\lambda^*}(x) + b^*
-\]
+ &= \ip{\Phi(x)}{\mathbf{z}^*} + b^* \\
+ &= \frac{1}{\Gamma}\left[\frac{1}{N}\sum_{j=1}^N w_{X_j}K(x,X_j) - \sum_{i,a}\lambda^*_{ia}\Bigl(K(x,X_i) - \alpha\sum_y p(X_i,y,a)K(y,x)\Bigr)\right] + b^* \\
+ &= \widehat{J}_{\lambda^*}(x) + b^*
+\end{align*}
 (\leandecl{KernelPolicy}{Kadp.SampledRSALP.value\_recovered\_eq\_kernel}). Finally, since $\sum_{y\in\mathcal{S}} p(x,y,a) = 1$, adding $b^*$ increases the one-step action score $g_{x,a} + \alpha\E_{x,a}[\widehat{J}_{\lambda^*}(X')]$ by $\alpha b^*$ uniformly across all $a\in\mathcal{A}$ (\leandecl{KernelPolicy}{Kadp.SampledRSALP.actionScore\_add\_const}). Hence $a$ minimizes the action score under $\tilde{J}_{\mathbf{z}^*,b^*}$ if and only if it minimizes the action score under $\widehat{J}_{\lambda^*}$, preserving all ties (\leandecl{KernelPolicy}{Kadp.SampledRSALP.greedyActions\_add\_const}, \leandecl{KernelPolicy}{Kadp.SampledRSALP.kernelPolicy\_of\_optima}).
 \end{proof}
 
@@ -1059,7 +1074,7 @@ For a nonempty function class $\mathcal{F}$ on $\mathcal{S}$ and i.i.d.\ sample 
  \widehat{R}_N(\mathcal{F}) \defeq \E_\sigma\!\left[\sup_{f\in\mathcal{F}} \frac{2}{N}\sum_{i=1}^N \sigma_i f(X_i)\right], \qquad
  R_N(\mathcal{F}) \defeq \E_X\bigl[\widehat{R}_N(\mathcal{F})\bigr].
 \]
-(Note that \emph{FoML}~\cite{FoML} uses factor $1/N$, so $R_N(\mathcal{F}) = 2 R_N^{\mathrm{FoML}}(\mathcal{F})$; see \leandecl{OneSidedConcentration}{Kadp.paperRademacherComplexity\_eq}.)
+Note that \emph{FoML}~\cite{FoML} normalizes Rademacher complexity by $1/N$, so $R_N(\mathcal{F}) = 2 R_N^{\mathrm{FoML}}(\mathcal{F})$ (\leandecl{OneSidedConcentration}{Kadp.paperRademacherComplexity\_eq}).
 
 \begin{numbered}{Lemma}{1}[One-Sided Concentration --- Positive Envelope]\label{lem:1}
 Let $\mathcal{S}$ be a finite or countably infinite discrete state space, let $N\ge 1$, $0 < \delta < 1$, and $B_f > 0$. Suppose $\mathcal{F}$ is a nonempty class of functions $f:\mathcal{S}\to\R$ satisfying $|f(x)| \le B_f$ for all $f\in\mathcal{F}$ and $x\in\mathcal{S}$. Let $X_1,\ldots,X_N$ be independent draws from a distribution $P$ on $\mathcal{S}$, and set $Z(X) \defeq \sup_{f\in\mathcal{F}}(Pf - P_N f)$. Then
@@ -1091,7 +1106,11 @@ For each coordinate $i$, independently swapping $X_i$ and $X'_i$ when $\sigma_i 
 because $-\sigma$ has the same law as $\sigma$ (\leandecl{OneSidedConcentration}{Kadp.rademacherComplexity\_neg\_eq}).
 
 \textbf{Step 3 (Bounded differences via tilted variances).}
-Replacing one coordinate $X_i$ by $X'_i$ changes $P_N f$ by at most $2B_f/N$ uniformly over $f\in\mathcal{F}_0$, so $|Z(X_1,\ldots,X_i,\ldots,X_N) - Z(X_1,\ldots,X'_i,\ldots,X_N)| \le c \defeq 2B_f/N > 0$. Expose the independent coordinates sequentially via Doob martingale increments $\Delta_i \defeq \E[Z \mid X_1,\ldots,X_i] - \E[Z \mid X_1,\ldots,X_{i-1}]$. Given $X_1,\ldots,X_{i-1}$, averaging over $X_{i+1},\ldots,X_N$ preserves the $c$-Lipschitz variation in $X_i$, so $\Delta_i$ has conditional mean zero and conditional range of width at most $c$. For any zero-mean random variable $W \in [a, a+c]$, the second derivative of $\psi(\lambda) \defeq \ln\E[e^{\lambda W}]$ is the variance of $W$ under the exponentially tilted law, which is at most $c^2/4$ (by Popoviciu's inequality). Since $\psi(0) = \psi'(0) = 0$, integrating $\psi'' \le c^2/4$ twice gives $\E[e^{\lambda W}] \le e^{\lambda^2 c^2/8}$ for all $\lambda \ge 0$. Iterating conditional expectations yields $\E[e^{\lambda(Z - \E Z)}] \le \exp(N\lambda^2 c^2/8)$. For any $t > 0$, Markov's inequality evaluated at $\lambda = 4t/(Nc^2) > 0$ gives
+Replacing one coordinate $X_i$ by $X'_i$ changes $P_N f$ by at most $2B_f/N$ uniformly over $f\in\mathcal{F}_0$, giving the uniform bounded-differences constant $c \defeq 2B_f/N > 0$:
+\[
+ \bigl|Z(X_1,\ldots,X_i,\ldots,X_N) - Z(X_1,\ldots,X'_i,\ldots,X_N)\bigr| \le c.
+\]
+Expose the independent coordinates sequentially via Doob martingale increments $\Delta_i \defeq \E[Z \mid X_1,\ldots,X_i] - \E[Z \mid X_1,\ldots,X_{i-1}]$. Given $X_1,\ldots,X_{i-1}$, averaging over $X_{i+1},\ldots,X_N$ preserves the $c$-Lipschitz variation in $X_i$, so $\Delta_i$ has conditional mean zero and conditional range of width at most $c$. For any zero-mean random variable $W \in [a, a+c]$, the second derivative of $\psi(\lambda) \defeq \ln\E[e^{\lambda W}]$ is the variance of $W$ under the exponentially tilted law, which is at most $c^2/4$ (by Popoviciu's inequality). Since $\psi(0) = \psi'(0) = 0$, integrating $\psi'' \le c^2/4$ twice gives $\E[e^{\lambda W}] \le e^{\lambda^2 c^2/8}$ for all $\lambda \ge 0$. Iterating conditional expectations yields $\E[e^{\lambda(Z - \E Z)}] \le \exp(N\lambda^2 c^2/8)$. For any $t > 0$, Markov's inequality evaluated at $\lambda = 4t/(Nc^2) > 0$ gives
 \[
  \Prob(Z - \E Z \ge t) \le \exp\!\left(-\frac{2t^2}{Nc^2}\right) = \exp\!\left(-\frac{Nt^2}{2B_f^2}\right).
 \]
@@ -1104,11 +1123,11 @@ Setting $t \defeq B_f\sqrt{2\ln(1/\delta)/N} > 0$ (valid since $B_f > 0$ and $0 
 \label{app:thm3}
 
 Fix a policy $\mu\in\Pi$ and radii $C,B\ge 0$. Define $d_\mu(x) \defeq \Phi(x) - \alpha\sum_{y\in\mathcal{S}} P_\mu(x,y)\Phi(y)$ and recall $K = \max_{x\in\mathcal{S}}\norm{\Phi(x)}_{\mathcal{H}}$ and $\Cbar = 4CK(1+\alpha) + 4B(1-\alpha) + 2\norm{g}_\infty$. Consider the linear class and the two residual classes:
-\[
- \mathcal{F}_{\mathcal{S},\mu} \defeq \{x \mapsto \ip{d_\mu(x)}{\mathbf{z}} : \norm{\mathbf{z}}_{\mathcal{H}} \le C\}, \quad
- \overline{\mathcal{F}}_{\mathcal{S},\mu} \defeq \{r_\mu(\tilde{J}_{\mathbf{z},b}) : (\mathbf{z},b)\in\mathcal{C}(C,B)\}, \quad
+\begin{align*}
+ \mathcal{F}_{\mathcal{S},\mu} &\defeq \{x \mapsto \ip{d_\mu(x)}{\mathbf{z}} : \norm{\mathbf{z}}_{\mathcal{H}} \le C\}, \\
+ \overline{\mathcal{F}}_{\mathcal{S},\mu} &\defeq \{r_\mu(\tilde{J}_{\mathbf{z},b}) : (\mathbf{z},b)\in\mathcal{C}(C,B)\}, \qquad
  \overline{\mathcal{F}}_{\mathcal{S}} \defeq \{r(\tilde{J}_{\mathbf{z},b}) : (\mathbf{z},b)\in\mathcal{C}(C,B)\}.
-\]
+\end{align*}
 
 \begin{numbered}{Lemma}{2}[Linear Residual Complexity]\label{lem:2}
 For every policy $\mu\in\Pi$, $N\ge 1$, and fixed sample $X = (X_1,\ldots,X_N)$, $\widehat{R}_N(\mathcal{F}_{\mathcal{S},\mu}) \le 2CK(1+\alpha)/\sqrt{N}$, and hence $R_N(\mathcal{F}_{\mathcal{S},\mu}) \le 2CK(1+\alpha)/\sqrt{N}$.
@@ -1116,7 +1135,13 @@ For every policy $\mu\in\Pi$, $N\ge 1$, and fixed sample $X = (X_1,\ldots,X_N)$,
 \end{numbered}
 
 \begin{proof}[Proof of Lemma~\ref{lem:2}]
-Since each row of $P_\mu$ sums to one and has nonnegative entries, $\norm{\sum_y P_\mu(x,y)\Phi(y)}_{\mathcal{H}} \le \sum_y P_\mu(x,y)\norm{\Phi(y)}_{\mathcal{H}} \le K$, so $\norm{d_\mu(x)}_{\mathcal{H}} \le K(1+\alpha)$ for every $x\in\mathcal{S}$ (\leandecl{Idealized}{Kadp.Idealized.norm\_featureDifference}). Fix the sample $X$. By Cauchy--Schwarz, Jensen's inequality, and orthogonality of distinct signs ($\E_\sigma[\sigma_i\sigma_j] = \delta_{ij}$),
+For every $x\in\mathcal{S}$, since $P_\mu(x,\cdot)$ is a probability distribution,
+\[
+ \norm{\sum_y P_\mu(x,y)\Phi(y)}_{\mathcal{H}}
+ \le \sum_y P_\mu(x,y)\norm{\Phi(y)}_{\mathcal{H}}
+ \le K,
+\]
+whence $\norm{d_\mu(x)}_{\mathcal{H}} \le K(1+\alpha)$ (\leandecl{Idealized}{Kadp.Idealized.norm\_featureDifference}). Fix the sample $X$. By Cauchy--Schwarz, Jensen's inequality, and sign orthogonality ($\E_\sigma[\sigma_i\sigma_j] = \delta_{ij}$),
 \begin{align*}
  \widehat{R}_N(\mathcal{F}_{\mathcal{S},\mu})
  &= \frac{2}{N}\,\E_\sigma\!\left[\sup_{\norm{\mathbf{z}}_{\mathcal{H}}\le C}\ip{\sum_{i=1}^N \sigma_i d_\mu(X_i)}{\mathbf{z}}\right]
